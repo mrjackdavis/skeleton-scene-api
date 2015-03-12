@@ -1,0 +1,22 @@
+{
+  "name": "skeleton-scene-api",
+  "version": "0.1.0",
+  "description": "RESTful HTTP API for Skeleton Scene Project",
+  "main": "index.js",
+  "scripts": {
+    "test": "gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrjackdavis/skeleton-scene-api.git"
+  },
+  "keywords": [
+    "skeleton-scene"
+  ],
+  "author": "Jack Davis",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mrjackdavis/skeleton-scene-api/issues"
+  },
+  "homepage": "https://github.com/mrjackdavis/skeleton-scene-api"
+}
