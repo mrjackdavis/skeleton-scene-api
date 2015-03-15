@@ -1,13 +1,32 @@
 var NotImpementedError = require('../lib/NotImplementedError');
+var express = require('express');
+var request = require('supertest-as-promised');
+var expect = require('expect.js');
 
 describe('API endpoint',function(){
+	var app = express();
+
 	describe('/scene',function(){
 		describe('POST',function(){
-			it('should return all scenes in JSON',function(){
+
+			var response;
+
+			before(function(done){
+				request(app).get('/scene')
+					.then(function(res){
+						response = res;
+						done();
+					})
+					.catch(function(err){
+						done(err);
+					});
+			});
+
+			it('should return all scenes in JSON',function(done){
 				throw new NotImpementedError();
 			});
 			it('should respond with code 200 upon success',function(){
-				throw new NotImpementedError();
+				expect(response.statusCode).to.be(200);
 			});
 		});
 		describe('POST',function(){

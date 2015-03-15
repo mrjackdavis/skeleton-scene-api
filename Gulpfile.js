@@ -18,5 +18,5 @@ gulp.task('lint',function(){
 
 gulp.task('test',['lint'], function() {
 	return gulp.src(manifest.tests,{read: false})
-		.pipe(mocha({reporter: 'nyan'}));
+		.pipe(mocha());
 });
