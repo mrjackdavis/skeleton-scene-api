@@ -3,7 +3,7 @@ var mocha = require('gulp-mocha');
 var jshint = require('gulp-jshint');
 
 var manifest = {
-	js:['./tests/**.js','./*.js'],
+	js:['./tests/**.js','./lib/**.js','./*.js'],
 	tests:['./tests/**.js'],
 };
 
