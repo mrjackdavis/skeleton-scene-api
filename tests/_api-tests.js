@@ -5,6 +5,7 @@ var expect = require('expect.js');
 
 describe('API endpoint',function(){
 	var app = express();
+	app.use('/scene',require('../controllers/scene-api'));
 
 	describe('/scene',function(){
 		describe('POST',function(){
