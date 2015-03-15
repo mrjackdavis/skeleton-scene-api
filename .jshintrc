@@ -8,7 +8,6 @@
   "quotmark": "single",
   "maxdepth": 3,
   "maxstatements": 15,
-  "maxlen": 80,
   "eqnull": true,
   "funcscope": true,
   "node": true
