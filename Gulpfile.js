@@ -2,18 +2,21 @@ var gulp = require('gulp');
 var mocha = require('gulp-mocha');
 var jshint = require('gulp-jshint');
 
-gulp.task('default', function() {
-	console.log('Hello world!');
-});
+var manifest = {
+	js:['./tests/**.js','./*.js'],
+	tests:['./tests/**.js'],
+};
+
+gulp.task('default', ['test']);
 
 gulp.task('lint',function(){
-	gulp.src('tests/**.js')
+	return gulp.src(manifest.js)
         .pipe(jshint('.jshintrc'))
         .pipe(jshint.reporter('jshint-stylish'))
-		.pipe(jshint.reporter('fail'))
-})
+		.pipe(jshint.reporter('fail'));
+});
 
-gulp.task('test', function() {
-	gulp.src('tests/**.js',{read: false})
+gulp.task('test',['lint'], function() {
+	return gulp.src(manifest.tests,{read: false})
 		.pipe(mocha({reporter: 'nyan'}));
 });
