@@ -4,7 +4,8 @@
   "description": "RESTful HTTP API for Skeleton Scene Project",
   "main": "index.js",
   "scripts": {
-    "test": "gulp test"
+    "test": "gulp test",
+    "start":"node index.js"
   },
   "repository": {
     "type": "git",
