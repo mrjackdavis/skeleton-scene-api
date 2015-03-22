@@ -1,5 +1,4 @@
 var NotImpementedError = require('../lib/NotImplementedError');
-var express = require('express');
 var request = require('supertest-as-promised');
 var expect = require('expect.js');
 var app = require('../app');
@@ -7,7 +6,6 @@ var app = require('../app');
 describe('API endpoint',function(){
 	describe('/scene',function(){
 		describe('POST',function(){
-
 			var response;
 
 			before(function(done){
@@ -45,11 +43,13 @@ describe('API endpoint',function(){
 				expect(response.body).to.be.ok();
 				expect(response.body).to.eql([
 					{
+						_id:0,
 						resource:{
 							type:'url',
 							location:'http://www.google.com'
 						}
 					}, {
+						_id:1,
 						resource:{
 							type:'url',
 							location:'http://www.github.com'
@@ -90,6 +90,8 @@ describe('API endpoint',function(){
 			});
 			it('should return a `Location` header with a link to the newly-created resource',function(){
 				expect(response.headers.location).to.be.ok();
+				expect(response.headers.location).to.be.contain('http://127.0.0.1:8080/scene/');
+				console.log(response.headers.location);
 			});
 		});
 	});
