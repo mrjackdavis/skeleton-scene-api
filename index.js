@@ -1,4 +1,4 @@
-var AppFactory = require('./AppFactory');
+var AppFactory = require('./lib/AppFactory');
 
 var appFactory = new AppFactory();
 
