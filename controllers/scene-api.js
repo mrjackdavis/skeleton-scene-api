@@ -15,7 +15,7 @@ router.post('/',function (req,res) {
 	res.status(201);
 
 	var resourceLocation = req.protocol+'://'+req.hostname;
-	resourceLocation += ':8080';
+	// resourceLocation += ':8080';
 	resourceLocation += req.originalUrl;
 	resourceLocation += '/'+obj._id;
 	

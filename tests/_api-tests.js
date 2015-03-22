@@ -94,8 +94,7 @@ describe('API endpoint',function(){
 			});
 			it('should return a `Location` header with a link to the newly-created resource',function(){
 				expect(response.headers.location).to.be.ok();
-				expect(response.headers.location).to.be.contain('http://127.0.0.1:8080/scene/');
-				console.log(response.headers.location);
+				expect(response.headers.location).to.be.contain('http://127.0.0.1/scene/');
 			});
 		});
 	});
