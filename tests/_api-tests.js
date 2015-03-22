@@ -1,9 +1,13 @@
 var NotImpementedError = require('../lib/NotImplementedError');
 var request = require('supertest-as-promised');
 var expect = require('expect.js');
-var app = require('../app');
+var AppFactory = require('../AppFactory');
 
 describe('API endpoint',function(){
+	var appFactory = new AppFactory();
+
+	var app = appFactory.NewApp();
+
 	describe('/scene',function(){
 		describe('POST',function(){
 			var response;
