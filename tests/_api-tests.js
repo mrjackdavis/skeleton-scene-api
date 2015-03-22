@@ -23,8 +23,20 @@ describe('API endpoint',function(){
 					});
 			});
 
-			it('should return all scenes in JSON',function(done){
-				throw new NotImpementedError();
+			it('should return all scenes in JSON',function(){
+				expect(response.body).to.be.ok();
+				expect(response.body).to.eql([
+					{
+						resource:{
+							type:'url',
+							location:'http://www.google.com'
+						}
+					}, {
+						resource:{
+							type:'url',
+							location:'http://www.github.com'
+						}
+					}]);
 			});
 			it('should respond with code 200 upon success',function(){
 				expect(response.statusCode).to.be(200);
