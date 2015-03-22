@@ -2,11 +2,9 @@ var NotImpementedError = require('../lib/NotImplementedError');
 var express = require('express');
 var request = require('supertest-as-promised');
 var expect = require('expect.js');
+var app = require('../app');
 
 describe('API endpoint',function(){
-	var app = express();
-	app.use('/scene',require('../controllers/scene-api'));
-
 	describe('/scene',function(){
 		describe('POST',function(){
 
@@ -58,7 +56,7 @@ describe('API endpoint',function(){
 						}
 					}]);
 			});
-			
+
 			it('should respond with code 200 upon success',function(){
 				expect(response.statusCode).to.be(200);
 			});
