@@ -130,7 +130,7 @@ describe('API endpoint',function(){
 	});
 	describe('/scene/{id}/processes/{id}',function(){
 		describe('PUT',function(){
-			it('should update process',function(done){
+			it('should update process status',function(done){
 				request(app)
 					.post('/scene')
 					.send({
@@ -156,12 +156,10 @@ describe('API endpoint',function(){
 							});
 					})
 					.then(function(res){
-						// console.log(res);
 						return request(app)
 							.get('/scene');
 					})
 					.then(function(res){
-						console.log(res.body[res.body.length-1]);
 						expect(res.body[res.body.length-1].processes[0].status).to.be('Failed');
 						done();
 					})
