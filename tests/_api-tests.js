@@ -119,7 +119,7 @@ describe('API endpoint',function(){
 
 			it('should return a `Location` header with a link to the newly-created resource',function(){
 				expect(response.headers).to.have.key('location');
-				expect(response.headers.location).to.be.contain('http://127.0.0.1/scene/1/processes/0');
+				expect(response.headers.location).to.be('http://127.0.0.1/scene/1/processes/0');
 			});
 		});
 
