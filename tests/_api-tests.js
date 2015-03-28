@@ -91,7 +91,7 @@ describe('API endpoint',function(){
 				expect(response.statusCode).to.be(201);
 			});
 			it('should return a `Location` header with a link to the newly-created resource',function(){
-				expect(response.headers.location).to.be.ok();
+				expect(response.headers).to.have.key('location');
 				expect(response.headers.location).to.be.contain('http://127.0.0.1/scene/');
 			});
 		});
@@ -116,6 +116,7 @@ describe('API endpoint',function(){
 			it('should create a new process for the desired scene',function(done){
 				request(app).get('/scene')
 					.then(function(getRes){
+						console.log(getRes.body);
 						expect(getRes.body[1].processes).to.be.an(Array);
 						expect(getRes.body[1].processes[0].status).to.eql('InProgress');
 						done();
@@ -124,10 +125,13 @@ describe('API endpoint',function(){
 			});
 
 			it('should return a `Location` header with a link to the newly-created resource',function(){
-				throw new NotImpementedError();
+				expect(response.headers).to.have.key('location');
+				expect(response.headers.location).to.be.contain('http://127.0.0.1/scene/1/processes/0');
 			});
 		});
 
+	});
+	describe('/scene/{id}/processes/{id}',function(){
 		describe('PUT',function(){
 			it('should update process',function(){
 				throw new NotImpementedError();
