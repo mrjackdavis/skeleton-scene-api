@@ -162,6 +162,7 @@ describe('API endpoint',function(){
 					})
 					.then(function(res){
 						expect(res.body[res.body.length-1].processes[0].status).to.be('Complete');
+						expect(res.body[res.body.length-1].processes[0].result).to.be('http://my.awesome/result');
 						done();
 					})
 					.catch(done);
