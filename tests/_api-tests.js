@@ -44,21 +44,14 @@ describe('API endpoint',function(){
 			});
 
 			it('should return all scenes in JSON',function(){
-				expect(response.body).to.be.ok();
-				expect(response.body).to.eql([
-					{
-						_id:0,
-						resource:{
-							type:'url',
-							location:'http://www.google.com'
-						}
-					}, {
-						_id:1,
-						resource:{
-							type:'url',
-							location:'http://www.github.com'
-						}
-					}]);
+				expect(response.body).to.be.an(Array);
+				expect(response.body.length).to.be(2);
+				expect(response.body[0]._id).to.be(0);
+				expect(response.body[0].resource).to.be.ok();
+				expect(response.body[0].resource.type).to.be('url');
+				expect(response.body[0].resource.location).to.be('http://www.google.com');
+				expect(response.body[0].processes).to.be.an(Array);
+				expect(response.body[0].processes.length).to.be(0);
 			});
 
 			it('should respond with code 200 upon success',function(){
@@ -116,8 +109,8 @@ describe('API endpoint',function(){
 			it('should create a new process for the desired scene',function(done){
 				request(app).get('/scene')
 					.then(function(getRes){
-						console.log(getRes.body);
 						expect(getRes.body[1].processes).to.be.an(Array);
+						expect(getRes.body[1].processes.length).to.be(1);
 						expect(getRes.body[1].processes[0].status).to.eql('InProgress');
 						done();
 					})
