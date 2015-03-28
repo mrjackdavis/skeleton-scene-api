@@ -9,7 +9,7 @@ describe('API endpoint',function(){
 	var app = appFactory.NewApp();
 
 	describe('/scene',function(){
-		describe('POST',function(){
+		describe('GET',function(){
 			var response;
 
 			before(function(done){
@@ -64,6 +64,10 @@ describe('API endpoint',function(){
 			it('should respond with code 200 upon success',function(){
 				expect(response.statusCode).to.be(200);
 			});
+
+			it('should contain any processes for each scene',function(){
+				throw new NotImpementedError();
+			});
 		});
 		describe('POST',function(){
 			var response;
@@ -95,6 +99,22 @@ describe('API endpoint',function(){
 			it('should return a `Location` header with a link to the newly-created resource',function(){
 				expect(response.headers.location).to.be.ok();
 				expect(response.headers.location).to.be.contain('http://127.0.0.1/scene/');
+			});
+		});
+	});
+	describe('/scene/{id}/processes',function(){
+		describe('POST',function(){
+			it('should create a new process for the desired scene',function(){
+				throw new NotImpementedError();
+			});
+		});
+
+		describe('PUT',function(){
+			it('should update process',function(){
+				throw new NotImpementedError();
+			});
+			it('should require result if complete',function(){
+				throw new NotImpementedError();
 			});
 		});
 	});
