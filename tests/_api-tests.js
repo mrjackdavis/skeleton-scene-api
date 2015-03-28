@@ -121,7 +121,7 @@ describe('API endpoint',function(){
 				expect(response.headers).to.have.key('location');
 				expect(response.headers.location).to.be('http://127.0.0.1/scene/1/processes/0');
 			});
-			
+
 			it('should respond with code 201 upon success',function(){
 				expect(response.statusCode).to.be(201);
 			});
@@ -130,8 +130,42 @@ describe('API endpoint',function(){
 	});
 	describe('/scene/{id}/processes/{id}',function(){
 		describe('PUT',function(){
-			it('should update process',function(){
-				throw new NotImpementedError();
+			it('should update process',function(done){
+				request(app)
+					.post('/scene')
+					.send({
+						resource:{
+							type:'url',
+							location:'http://www.trioxis.com'
+						}
+					})
+					.then(function(res){
+						var loc = res.headers.location.replace('http://127.0.0.1','')+'/processes';
+						return request(app)
+							.post(loc)
+							.send({
+								'status':'InProgress'
+							});
+					})
+					.then(function(res){
+						var loc = res.headers.location.replace('http://127.0.0.1','');
+						return request(app)
+							.put(loc)
+							.send({
+								'status':'Failed'
+							});
+					})
+					.then(function(res){
+						// console.log(res);
+						return request(app)
+							.get('/scene');
+					})
+					.then(function(res){
+						console.log(res.body[res.body.length-1]);
+						expect(res.body[res.body.length-1].processes[0].status).to.be('Failed');
+						done();
+					})
+					.catch(done);
 			});
 			it('should require result if complete',function(){
 				throw new NotImpementedError();
