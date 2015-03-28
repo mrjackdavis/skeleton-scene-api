@@ -64,10 +64,6 @@ describe('API endpoint',function(){
 			it('should respond with code 200 upon success',function(){
 				expect(response.statusCode).to.be(200);
 			});
-
-			it('should contain any processes for each scene',function(){
-				throw new NotImpementedError();
-			});
 		});
 		describe('POST',function(){
 			var response;
@@ -85,9 +81,7 @@ describe('API endpoint',function(){
 						response = res;
 						done();
 					})
-					.catch(function(err){
-						done(err);
-					});
+					.catch(done);
 			});
 
 			// it('should create a new scene',function(){
@@ -104,7 +98,32 @@ describe('API endpoint',function(){
 	});
 	describe('/scene/{id}/processes',function(){
 		describe('POST',function(){
-			it('should create a new process for the desired scene',function(){
+			var response;
+
+			before(function(done){
+				request(app)
+					.post('/scene/1/processes')
+					.send({
+						'status':'InProgress'
+					})
+					.then(function(res){
+						response = res;
+						done();
+					})
+					.catch(done);
+			});
+
+			it('should create a new process for the desired scene',function(done){
+				request(app).get('/scene')
+					.then(function(getRes){
+						expect(getRes.body[1].processes).to.be.an(Array);
+						expect(getRes.body[1].processes[0].status).to.eql('InProgress');
+						done();
+					})
+					.catch(done);
+			});
+
+			it('should return a `Location` header with a link to the newly-created resource',function(){
 				throw new NotImpementedError();
 			});
 		});
