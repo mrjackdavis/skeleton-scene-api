@@ -152,7 +152,8 @@ describe('API endpoint',function(){
 						return request(app)
 							.put(loc)
 							.send({
-								'status':'Failed'
+								'status':'Complete',
+								'result':'http://my.awesome/result'
 							});
 					})
 					.then(function(res){
@@ -160,13 +161,43 @@ describe('API endpoint',function(){
 							.get('/scene');
 					})
 					.then(function(res){
-						expect(res.body[res.body.length-1].processes[0].status).to.be('Failed');
+						expect(res.body[res.body.length-1].processes[0].status).to.be('Complete');
 						done();
 					})
 					.catch(done);
 			});
-			it('should require result if complete',function(){
-				throw new NotImpementedError();
+			it('should require result if complete',function(done){
+				request(app)
+					.post('/scene')
+					.send({
+						resource:{
+							type:'url',
+							location:'http://www.trioxis.com'
+						}
+					})
+					.then(function(res){
+						var loc = res.headers.location.replace('http://127.0.0.1','')+'/processes';
+						return request(app)
+							.post(loc)
+							.send({
+								'status':'InProgress'
+							});
+					})
+					.then(function(res){
+						var loc = res.headers.location.replace('http://127.0.0.1','');
+						return request(app)
+							.put(loc)
+							.send({
+								'status':'Complete'
+							});
+					})
+					.then(function(res){
+						expect(res.statusCode).to.be(400);
+						expect(res.body).to.have.key('message');
+
+						done();
+					})
+					.catch(done);
 			});
 		});
 	});
