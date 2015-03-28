@@ -121,6 +121,10 @@ describe('API endpoint',function(){
 				expect(response.headers).to.have.key('location');
 				expect(response.headers.location).to.be('http://127.0.0.1/scene/1/processes/0');
 			});
+			
+			it('should respond with code 201 upon success',function(){
+				expect(response.statusCode).to.be(201);
+			});
 		});
 
 	});
