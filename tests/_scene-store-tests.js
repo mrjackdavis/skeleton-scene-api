@@ -28,7 +28,11 @@ describe('SceneStore',function(){
 
 			store.Add(scene).then(function(scene){
 				expect(scene).to.be.ok();
-				expect(scene.sceneID).to.be.ok();
+				expect(scene.sceneID).to.be.a('number');
+				expect(scene.dateCreated).to.be.a('number');
+				expect(scene.resource).to.be.an(Object);
+				expect(scene.processes).to.be.an(Array);
+				expect(scene.resource.location).to.be('http://la.com');
 
 				done();
 			}).catch(function(err){
