@@ -4,10 +4,15 @@ var SceneStore = require('../lib/stores/SceneStore');
 var appConfigGetter = require('../lib/AppConfig');
 
 describe('SceneStore',function(){
-	var appConfig;
+	var storeConfig;
 	before(function(done){
 		appConfigGetter().then(function(config){
-			appConfig = config;
+			storeConfig = {
+				AWS_CREDENTIALS:{
+					accessKeyId:config.TEST_AWS_CREDENTIALS.accessKeyId,
+					secretAccessKey:config.TEST_AWS_CREDENTIALS.secretAccessKey
+				}
+			};
 			done();
 		}).catch(done);
 	});
@@ -15,10 +20,7 @@ describe('SceneStore',function(){
 	describe('Add and get',function(){
 		it('should create and retrieve a new item respectively',function(done){
 			this.timeout(8000);
-			var store = new SceneStore({
-				accessKeyId:appConfig.TEST_AWS_CREDENTIALS.accessKeyId,
-				secretAccessKey:appConfig.TEST_AWS_CREDENTIALS.secretAccessKey
-			});
+			var store = new SceneStore(storeConfig);
 
 			var scene = {
 				resource:{'type':'url','location':'http://la.com'},
@@ -40,10 +42,7 @@ describe('SceneStore',function(){
 					return scene;
 				}).then(function(scene){
 					// Recreate store to prove nothing was held in memory
-					store = new SceneStore({
-						accessKeyId:appConfig.TEST_AWS_CREDENTIALS.accessKeyId,
-						secretAccessKey:appConfig.TEST_AWS_CREDENTIALS.secretAccessKey
-					});
+					store = new SceneStore(storeConfig);
 
 					return store
 						.Get({sceneID:scene.sceneID, dateCreated:scene.dateCreated})
@@ -64,10 +63,7 @@ describe('SceneStore',function(){
 	describe('GetRange',function(done){
 		it('should return most recent scenes 100 by default',function(done){
 			this.timeout(8000);
-			var store = new SceneStore({
-				accessKeyId:appConfig.TEST_AWS_CREDENTIALS.accessKeyId,
-				secretAccessKey:appConfig.TEST_AWS_CREDENTIALS.secretAccessKey
-			});
+			var store = new SceneStore(storeConfig);
 
 			store.GetRange().then(function(scenes){
 				expect(scenes).to.be.an(Array);

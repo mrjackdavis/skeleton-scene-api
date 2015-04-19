@@ -2,11 +2,21 @@ var NotImpementedError = require('../lib/NotImplementedError');
 var request = require('supertest-as-promised');
 var expect = require('expect.js');
 var AppFactory = require('../lib/AppFactory');
+var appConfigGetter = require('../lib/AppConfig');
 
 describe('API endpoint',function(){
 	var appFactory = new AppFactory();
 
-	var app = appFactory.NewApp();
+	var app;
+
+	before(function(done){
+		appConfigGetter().then(function(config){
+			app =  appFactory.NewApp({
+				AWS_CREDENTIALS: config.TEST_AWS_CREDENTIALS
+			});
+			done();
+		}).catch(done);
+	});
 
 	it('should enable CORS for web application',function(done){
 		request(app).get('/scene')
