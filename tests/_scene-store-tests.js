@@ -23,6 +23,7 @@ describe('SceneStore',function(){
 			var scene = {
 				resource:{'type':'url','location':'http://la.com'},
 				processes:[],
+				tags:['testing'],
 				dateCreated:(new Date()).getTime()
 			};
 
@@ -33,6 +34,7 @@ describe('SceneStore',function(){
 					expect(scene.dateCreated).to.be.a('number');
 					expect(scene.resource).to.be.an(Object);
 					expect(scene.processes).to.be.an(Array);
+					expect(scene.tags).to.be.an(Array);
 					expect(scene.resource.location).to.be('http://la.com');
 
 					return scene;
@@ -50,6 +52,7 @@ describe('SceneStore',function(){
 							expect(scene2.sceneID).to.be(scene.sceneID);
 							expect(scene2.dateCreated).to.be(scene.dateCreated);
 							expect(scene2.resource).to.be.an(Object);
+							expect(scene2.tags).to.contain('testing');
 							expect(scene2.processes).to.be.an(Array);
 							expect(scene2.resource.location).to.be(scene.resource.location);
 						});
