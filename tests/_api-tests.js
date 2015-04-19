@@ -8,6 +8,26 @@ describe('API endpoint',function(){
 
 	var app = appFactory.NewApp();
 
+	it('should enable CORS for web application',function(done){
+		request(app).get('/scene')
+			.then(function(res){
+				expect(res.header).to.have.keys([
+					'access-control-allow-origin',
+					'access-control-allow-methods',
+					'access-control-allow-headers',
+					'access-control-allow-credentials']);
+
+				expect(res.header['access-control-allow-origin']).to.be('http://localhost:8080');
+				expect(res.header['access-control-allow-methods']).to.be('GET, POST, OPTIONS, PUT, PATCH, DELETE');
+				expect(res.header['access-control-allow-headers']).to.be('X-Requested-With,content-type');
+				expect(res.header['access-control-allow-credentials']).to.be('true');
+
+				done();
+			}).catch(function(err){
+				done(err);
+			});
+	});
+
 	describe('/scene',function(){
 		describe('GET',function(){
 			var response;
