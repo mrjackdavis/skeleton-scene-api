@@ -61,5 +61,20 @@ describe('SceneStore',function(){
 				}).catch(done);
 		});
 	});
+	describe('GetRange',function(done){
+		it('should return most recent scenes 100 by default',function(done){
+			this.timeout(8000);
+			var store = new SceneStore({
+				accessKeyId:appConfig.TEST_AWS_CREDENTIALS.accessKeyId,
+				secretAccessKey:appConfig.TEST_AWS_CREDENTIALS.secretAccessKey
+			});
+
+			store.GetRange().then(function(scenes){
+				expect(scenes).to.be.an(Array);
+				expect(scenes.length).to.be.greaterThan(1);
+				done();
+			}).catch(done);
+		});
+	});
 });
 
