@@ -12,8 +12,8 @@ describe('SceneStore',function(){
 		}).catch(done);
 	});
 
-	describe('Add',function(){
-		it('should create a new item',function(done){
+	describe('Add and get',function(){
+		it('should create and retrieve a new item respectively',function(done){
 			this.timeout(8000);
 			var store = new SceneStore({
 				accessKeyId:appConfig.TEST_AWS_CREDENTIALS.accessKeyId,
@@ -34,10 +34,26 @@ describe('SceneStore',function(){
 				expect(scene.processes).to.be.an(Array);
 				expect(scene.resource.location).to.be('http://la.com');
 
+				return scene;
+			}).then(function(scene){
+				// Recreate store to prove nothing was held in memory
+				store = new SceneStore({
+					accessKeyId:appConfig.TEST_AWS_CREDENTIALS.accessKeyId,
+					secretAccessKey:appConfig.TEST_AWS_CREDENTIALS.secretAccessKey
+				});
+
+				return store.Get({sceneID:scene.sceneID, dateCreated:scene.dateCreated})
+					.then(function(scene2){
+						expect(scene2).to.be.ok();
+						expect(scene2.sceneID).to.be.a(scene.sceneID);
+						expect(scene2.dateCreated).to.be(scene.dateCreated);
+						expect(scene2.resource).to.be.an(Object);
+						expect(scene2.processes).to.be.an(Array);
+						expect(scene2.resource.location).to.be(scene.resource.location);
+					});
+			}).then(function(){
 				done();
-			}).catch(function(err){
-				done(err);
-			});
+			}).catch(done);
 		});
 	});
 });
