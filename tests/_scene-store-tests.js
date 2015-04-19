@@ -26,34 +26,36 @@ describe('SceneStore',function(){
 				dateCreated:(new Date()).getTime()
 			};
 
-			store.Add(scene).then(function(scene){
-				expect(scene).to.be.ok();
-				expect(scene.sceneID).to.be.a('number');
-				expect(scene.dateCreated).to.be.a('number');
-				expect(scene.resource).to.be.an(Object);
-				expect(scene.processes).to.be.an(Array);
-				expect(scene.resource.location).to.be('http://la.com');
+			store.Add(scene)
+				.then(function(scene){
+					expect(scene).to.be.ok();
+					expect(scene.sceneID).to.be.a('number');
+					expect(scene.dateCreated).to.be.a('number');
+					expect(scene.resource).to.be.an(Object);
+					expect(scene.processes).to.be.an(Array);
+					expect(scene.resource.location).to.be('http://la.com');
 
-				return scene;
-			}).then(function(scene){
-				// Recreate store to prove nothing was held in memory
-				store = new SceneStore({
-					accessKeyId:appConfig.TEST_AWS_CREDENTIALS.accessKeyId,
-					secretAccessKey:appConfig.TEST_AWS_CREDENTIALS.secretAccessKey
-				});
-
-				return store.Get({sceneID:scene.sceneID, dateCreated:scene.dateCreated})
-					.then(function(scene2){
-						expect(scene2).to.be.ok();
-						expect(scene2.sceneID).to.be.a(scene.sceneID);
-						expect(scene2.dateCreated).to.be(scene.dateCreated);
-						expect(scene2.resource).to.be.an(Object);
-						expect(scene2.processes).to.be.an(Array);
-						expect(scene2.resource.location).to.be(scene.resource.location);
+					return scene;
+				}).then(function(scene){
+					// Recreate store to prove nothing was held in memory
+					store = new SceneStore({
+						accessKeyId:appConfig.TEST_AWS_CREDENTIALS.accessKeyId,
+						secretAccessKey:appConfig.TEST_AWS_CREDENTIALS.secretAccessKey
 					});
-			}).then(function(){
-				done();
-			}).catch(done);
+
+					return store
+						.Get({sceneID:scene.sceneID, dateCreated:scene.dateCreated})
+						.then(function(scene2){
+							expect(scene2).to.be.ok();
+							expect(scene2.sceneID).to.be(scene.sceneID);
+							expect(scene2.dateCreated).to.be(scene.dateCreated);
+							expect(scene2.resource).to.be.an(Object);
+							expect(scene2.processes).to.be.an(Array);
+							expect(scene2.resource.location).to.be(scene.resource.location);
+						});
+				}).then(function(){
+					done();
+				}).catch(done);
 		});
 	});
 });
