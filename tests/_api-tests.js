@@ -3,6 +3,9 @@ var request = require('supertest-as-promised');
 var expect = require('expect.js');
 var AppFactory = require('../lib/AppFactory');
 var appConfigGetter = require('../lib/AppConfig');
+var localDynamo = require('./local-dynamo');
+
+var DYNAMO_PORT = 61304;
 
 describe('API endpoint',function(){
 	var appFactory = new AppFactory();
@@ -11,9 +14,14 @@ describe('API endpoint',function(){
 
 	before(function(done){
 		appConfigGetter().then(function(config){
-			app =  appFactory.NewApp({
-				AWS_CREDENTIALS: config.TEST_AWS_CREDENTIALS
+			return appFactory.NewApp({
+				AWS_CREDENTIALS: config.TEST_AWS_CREDENTIALS,
+				endpoint:'http://localhost:'+61304
 			});
+		}).then(function(newApp){
+			app = newApp;
+			return localDynamo.launch('./tmp/dynamodb/',DYNAMO_PORT);
+		}).then(function(){
 			done();
 		}).catch(done);
 	});
