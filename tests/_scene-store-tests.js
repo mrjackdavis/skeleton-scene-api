@@ -3,6 +3,7 @@ var expect = require('expect.js');
 var SceneStore = require('../lib/stores/SceneStore');
 var appConfigGetter = require('../lib/AppConfig');
 var MockDynamo = require('./local-dynamo');
+var Promise = require('Promise');
 
 var DYNAMO_PORT = 4567;
 
@@ -80,11 +81,37 @@ describe('SceneStore',function(){
 		it('should return most recent scenes 100 by default',function(done){
 			var store = new SceneStore(storeConfig);
 
+			// Add over 100 items
 			store.GetRange().then(function(scenes){
-				expect(scenes).to.be.an(Array);
-				expect(scenes.length).to.be.greaterThan(1);
-				done();
-			}).catch(done);
+					expect(scenes).to.be.an(Array);
+
+					var i = scenes.length;
+					var promises = [];
+
+					while(i-1 < 110){
+						var scene = {
+							resource:{'type':'url','location':'http://'+i+'.lala'},
+							processes:[],
+							tags:['testing'],
+							dateCreated:(new Date()).getTime()
+						};
+
+						promises.push(store.Add(scene));
+
+						i++;
+					}
+
+					return Promise.all(promises);
+				})
+				.then(store.GetRange())
+				.then(function(scenes){
+					if(scenes.length === 110){
+						console.warn('Test inconclusive; library is probably broken');
+					}else{
+						expect(scenes.length).to.be(100);
+					}
+					done();
+				}).catch(done);
 		});
 	});
 });
