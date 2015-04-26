@@ -13,17 +13,20 @@ describe('API endpoint',function(){
 	var app;
 
 	before(function(done){
-		appConfigGetter().then(function(config){
-			return appFactory.NewApp({
-				AWS_CREDENTIALS: config.TEST_AWS_CREDENTIALS,
-				endpoint:'http://localhost:'+61304
-			});
-		}).then(function(newApp){
-			app = newApp;
-			return localDynamo.launch('./tmp/dynamodb/',DYNAMO_PORT);
-		}).then(function(){
-			done();
-		}).catch(done);
+		localDynamo.launch('./tmp/dynamodb/',DYNAMO_PORT)
+			.then(function(){
+				return appConfigGetter();
+			})
+			.then(function(config){
+				return appFactory.NewApp({
+					AWS_CREDENTIALS: config.TEST_AWS_CREDENTIALS,
+					endpoint:'http://localhost:'+DYNAMO_PORT
+				});
+			}).then(function(newApp){
+				app = newApp;
+			}).then(function(){
+				done();
+			}).catch(done);
 	});
 
 	it('should enable CORS for web application',function(done){

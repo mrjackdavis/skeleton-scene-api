@@ -13,15 +13,15 @@ describe('SceneStore',function(){
 			storeConfig = {
 				AWS_CREDENTIALS:{
 					accessKeyId:config.TEST_AWS_CREDENTIALS.accessKeyId,
-					secretAccessKey:config.TEST_AWS_CREDENTIALS.secretAccessKey,
-					endpoint:'http://localhost:'+61304
-				}
+					secretAccessKey:config.TEST_AWS_CREDENTIALS.secretAccessKey
+				},
+				endpoint:'http://localhost:'+61304
 			};
 		}).then(function(){
 			return localDynamo.launch('./tmp/dynamodb/',DYNAMO_PORT);
 		}).then(function(){
 			var store = new SceneStore(storeConfig);
-			store.SetupDb();
+			return store.SetupDb();
 		}).then(function(){
 			done();
 		}).catch(done);
