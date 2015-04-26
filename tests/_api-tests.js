@@ -82,7 +82,7 @@ describe('API endpoint',function(){
 
 			it('should return all scenes in JSON',function(){
 				expect(response.body).to.be.an(Array);
-				expect(response.body.length).to.be(2);
+				expect(response.body.length).to.be(1);
 				expect(response.body[0].sceneID).to.be.a('string');
 				expect(response.body[0].resource).to.be.ok();
 				expect(response.body[0].resource.type).to.be('url');
@@ -122,7 +122,8 @@ describe('API endpoint',function(){
 			});
 			it('should return a `Location` header with a link to the newly-created resource',function(){
 				expect(response.headers).to.have.key('location');
-				expect(response.headers.location).to.be.contain('http://127.0.0.1/scene/');
+				expect(response.headers.location).to.contain('http://127.0.0.1/scene/');
+				expect(response.headers.location).not.to.contain('undefined');
 			});
 		});
 	});
@@ -132,9 +133,21 @@ describe('API endpoint',function(){
 
 			before(function(done){
 				request(app)
-					.post('/scene/1/processes')
+					.post('/scene')
 					.send({
-						'status':'InProgress'
+						resource:{
+							type:'url',
+							location:'http://www.helloworld.com'
+						}
+					})
+					.then(function(res){
+						var location = res.headers.location;
+						console.log(location);
+						return request(app)
+							.post(location+'/processes')
+							.send({
+								'status':'InProgress'
+							});
 					})
 					.then(function(res){
 						response = res;
