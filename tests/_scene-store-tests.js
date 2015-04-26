@@ -2,12 +2,14 @@ var NotImpementedError = require('../lib/NotImplementedError');
 var expect = require('expect.js');
 var SceneStore = require('../lib/stores/SceneStore');
 var appConfigGetter = require('../lib/AppConfig');
-var localDynamo = require('./local-dynamo');
+var MockDynamo = require('./local-dynamo');
 
 var DYNAMO_PORT = 61304;
 
 describe('SceneStore',function(){
 	var storeConfig;
+	var mockDynamo = new MockDynamo();
+
 	before(function(done){
 		appConfigGetter().then(function(config){
 			storeConfig = {
@@ -15,10 +17,10 @@ describe('SceneStore',function(){
 					accessKeyId:config.TEST_AWS_CREDENTIALS.accessKeyId,
 					secretAccessKey:config.TEST_AWS_CREDENTIALS.secretAccessKey
 				},
-				endpoint:'http://localhost:'+61304
+				endpoint:'http://localhost:'+DYNAMO_PORT
 			};
 		}).then(function(){
-			return localDynamo.launch('./tmp/dynamodb/',DYNAMO_PORT);
+			return mockDynamo.Start(DYNAMO_PORT);
 		}).then(function(){
 			var store = new SceneStore(storeConfig);
 			return store.SetupDb();
@@ -27,9 +29,13 @@ describe('SceneStore',function(){
 		}).catch(done);
 	});
 
+	after(function(done){
+		mockDynamo.Stop().then(done);
+	});
+
 	describe('Add and get',function(){
 		it('should create and retrieve a new item respectively',function(done){
-			this.timeout(8000);
+			this.timeout(10000);
 			var store = new SceneStore(storeConfig);
 
 			var scene = {

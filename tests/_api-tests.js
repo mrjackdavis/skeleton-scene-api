@@ -3,17 +3,19 @@ var request = require('supertest-as-promised');
 var expect = require('expect.js');
 var AppFactory = require('../lib/AppFactory');
 var appConfigGetter = require('../lib/AppConfig');
-var localDynamo = require('./local-dynamo');
+var MockDynamo = require('./local-dynamo');
 
 var DYNAMO_PORT = 61304;
 
 describe('API endpoint',function(){
 	var appFactory = new AppFactory();
+	var mockDynamo = new MockDynamo();
 
 	var app;
 
 	before(function(done){
-		localDynamo.launch('./tmp/dynamodb/',DYNAMO_PORT)
+		this.timeout(8000);
+		mockDynamo.Start(DYNAMO_PORT)
 			.then(function(){
 				return appConfigGetter();
 			})
@@ -27,6 +29,11 @@ describe('API endpoint',function(){
 			}).then(function(){
 				done();
 			}).catch(done);
+	});
+
+	after(function(done){
+		this.timeout(8000);
+		mockDynamo.Stop().then(done);
 	});
 
 	it('should enable CORS for web application',function(done){

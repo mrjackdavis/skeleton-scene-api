@@ -1,18 +1,32 @@
-var localDynamo = require('local-dynamo');
 var Promise = require('promise');
 var mkdirp = require('mkdirp');
-// var path = require('path');
+var localDynamo = require('local-dynamo');
 
-module.exports.launch = function(dir,port) {
+function MockDynamo(){
+	this.filePath = './tmp/mockDynamo/';
+}
+
+MockDynamo.prototype.Start = function(port) {
+	var self = this;
+
 	return new Promise(function(resolve,reject){
-		// var resolvedDir = path.resolve(dir);
-		mkdirp(dir,function(err){
+		mkdirp(self.filePath,function(err){
 			if(err){
 				reject(err);
 			}else{
-				localDynamo.launch(dir, port);
+				self.process = localDynamo.launch(self.filePath, port);
 				resolve();
 			}
 		});
 	});
 };
+
+MockDynamo.prototype.Stop = function(port) {
+	var self = this;
+	return new Promise(function(resolve,reject){
+		self.process.kill('SIGHUP');
+		resolve();
+	});
+};
+
+module.exports = MockDynamo;
