@@ -14,7 +14,6 @@ describe('API endpoint',function(){
 	var app;
 
 	before(function(done){
-		this.timeout(8000);
 		mockDynamo.Start(DYNAMO_PORT)
 			.then(function(){
 				return appConfigGetter();
@@ -94,7 +93,7 @@ describe('API endpoint',function(){
 			it('should return all scenes in JSON',function(){
 				expect(response.body).to.be.an(Array);
 				expect(response.body.length).to.be(2);
-				expect(response.body[0]._id).to.be(0);
+				expect(response.body[0].sceneID).to.be.a('string');
 				expect(response.body[0].resource).to.be.ok();
 				expect(response.body[0].resource.type).to.be('url');
 				expect(response.body[0].resource.location).to.be('http://www.google.com');
