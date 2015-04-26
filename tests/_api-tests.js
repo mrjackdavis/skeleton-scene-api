@@ -69,16 +69,6 @@ describe('API endpoint',function(){
 						}
 					})
 					.then(function(res){
-						return request(app)
-							.post('/scene')
-							.send({
-								resource:{
-									type:'url',
-									location:'http://www.github.com'
-								}
-							});
-					})
-					.then(function(res){
 						return request(app).get('/scene');
 					})
 					.then(function(res){
