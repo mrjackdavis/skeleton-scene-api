@@ -43,7 +43,7 @@ describe('SceneStore',function(){
 				resource:{'type':'url','location':'http://la.com'},
 				processes:[],
 				tags:['testing'],
-				dateCreated:(new Date()).getTime()
+				dateCreated:new Date()
 			};
 
 			store.Add(scene)
@@ -93,7 +93,7 @@ describe('SceneStore',function(){
 							resource:{'type':'url','location':'http://'+i+'.lala'},
 							processes:[],
 							tags:['testing'],
-							dateCreated:(new Date()).getTime()
+							dateCreated:new Date()
 						};
 
 						promises.push(store.Add(scene));
