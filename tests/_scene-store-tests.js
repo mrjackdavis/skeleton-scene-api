@@ -49,8 +49,8 @@ describe('SceneStore',function(){
 			store.Add(scene)
 				.then(function(scene){
 					expect(scene).to.be.ok();
-					expect(scene.sceneID).to.be.a('number');
-					expect(scene.dateCreated).to.be.a('number');
+					expect(scene.sceneID).to.be.a('string');
+					expect(scene.dateCreated).to.be.a(Date);
 					expect(scene.resource).to.be.an(Object);
 					expect(scene.processes).to.be.an(Array);
 					expect(scene.tags).to.be.an(Array);
@@ -66,7 +66,7 @@ describe('SceneStore',function(){
 						.then(function(scene2){
 							expect(scene2).to.be.ok();
 							expect(scene2.sceneID).to.be(scene.sceneID);
-							expect(scene2.dateCreated).to.be(scene.dateCreated);
+							expect(scene2.dateCreated).to.eql(scene.dateCreated);
 							expect(scene2.resource).to.be.an(Object);
 							expect(scene2.tags).to.contain('testing');
 							expect(scene2.processes).to.be.an(Array);
