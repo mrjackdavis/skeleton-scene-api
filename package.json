@@ -22,6 +22,7 @@
   "homepage": "https://github.com/mrjackdavis/skeleton-scene-api",
   "devDependencies": {
     "bluebird": "^2.9.14",
+    "del": "^1.1.1",
     "dynalite": "^0.11.0",
     "expect.js": "^0.3.1",
     "gulp": "^3.8.11",

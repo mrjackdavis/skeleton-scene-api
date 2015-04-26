@@ -15,7 +15,7 @@ MockDynamo.prototype.Start = function(port) {
 			if(err){
 				reject(err);
 			}else{
-				self.server = dynalite({path: self.filePath, createTableMs: 50});
+				self.server = dynalite({path: self.filePath, createTableMs: 0});
 				self.server.listen(port, function(err) {
 					if(err){
 						reject(err);
