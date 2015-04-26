@@ -4,20 +4,20 @@ var SceneStore = require('../lib/stores/SceneStore');
 var appConfigGetter = require('../lib/AppConfig');
 var MockDynamo = require('./local-dynamo');
 
-var DYNAMO_PORT = 61304;
+var DYNAMO_PORT = 4567;
 
 describe('SceneStore',function(){
 	var storeConfig;
-	var mockDynamo = new MockDynamo();
+	var mockDynamo = new MockDynamo('./tmp/mockDynamo-scene-store-tests');
 
 	before(function(done){
 		appConfigGetter().then(function(config){
 			storeConfig = {
 				AWS_CREDENTIALS:{
-					accessKeyId:config.TEST_AWS_CREDENTIALS.accessKeyId,
-					secretAccessKey:config.TEST_AWS_CREDENTIALS.secretAccessKey
+					accessKeyId:'hocus',
+					secretAccessKey:'pocus'
 				},
-				endpoint:'http://localhost:'+DYNAMO_PORT
+				endpoint:'http://127.0.0.1:'+DYNAMO_PORT
 			};
 		}).then(function(){
 			return mockDynamo.Start(DYNAMO_PORT);
@@ -78,7 +78,6 @@ describe('SceneStore',function(){
 	});
 	describe('GetRange',function(done){
 		it('should return most recent scenes 100 by default',function(done){
-			this.timeout(8000);
 			var store = new SceneStore(storeConfig);
 
 			store.GetRange().then(function(scenes){

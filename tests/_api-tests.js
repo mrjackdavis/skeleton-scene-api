@@ -5,11 +5,11 @@ var AppFactory = require('../lib/AppFactory');
 var appConfigGetter = require('../lib/AppConfig');
 var MockDynamo = require('./local-dynamo');
 
-var DYNAMO_PORT = 61304;
+var DYNAMO_PORT = 4567;
 
 describe('API endpoint',function(){
 	var appFactory = new AppFactory();
-	var mockDynamo = new MockDynamo();
+	var mockDynamo = new MockDynamo('./tmp/mockDynamo-API-tests');
 
 	var app;
 
@@ -22,7 +22,7 @@ describe('API endpoint',function(){
 			.then(function(config){
 				return appFactory.NewApp({
 					AWS_CREDENTIALS: config.TEST_AWS_CREDENTIALS,
-					endpoint:'http://localhost:'+DYNAMO_PORT
+					endpoint:'http://127.0.0.1:'+DYNAMO_PORT
 				});
 			}).then(function(newApp){
 				app = newApp;

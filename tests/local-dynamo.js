@@ -1,9 +1,10 @@
 var Promise = require('promise');
 var mkdirp = require('mkdirp');
-var localDynamo = require('local-dynamo');
+// var localDynamo = require('local-dynamo');
+var dynalite = require('dynalite');
 
-function MockDynamo(){
-	this.filePath = './tmp/mockDynamo/';
+function MockDynamo(filePath){
+	this.filePath = filePath || './tmp/mockDynamo';
 }
 
 MockDynamo.prototype.Start = function(port) {
@@ -14,8 +15,14 @@ MockDynamo.prototype.Start = function(port) {
 			if(err){
 				reject(err);
 			}else{
-				self.process = localDynamo.launch(self.filePath, port);
-				resolve();
+				self.server = dynalite({path: self.filePath, createTableMs: 50});
+				self.server.listen(port, function(err) {
+					if(err){
+						reject(err);
+					}else{
+						resolve();
+					}
+				});
 			}
 		});
 	});
@@ -24,8 +31,14 @@ MockDynamo.prototype.Start = function(port) {
 MockDynamo.prototype.Stop = function(port) {
 	var self = this;
 	return new Promise(function(resolve,reject){
-		self.process.kill('SIGHUP');
-		resolve();
+		self.server.close(function(err){
+			if(err){
+				reject(err);
+			}else{
+
+				resolve();
+			}
+		});
 	});
 };
 
