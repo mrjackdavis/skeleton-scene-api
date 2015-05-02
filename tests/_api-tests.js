@@ -142,7 +142,6 @@ describe('API endpoint',function(){
 					})
 					.then(function(res){
 						var location = res.headers.location;
-						console.log(location);
 						return request(app)
 							.post(location+'/processes')
 							.send({

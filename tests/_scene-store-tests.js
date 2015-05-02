@@ -114,5 +114,36 @@ describe('SceneStore',function(){
 				}).catch(done);
 		});
 	});
+
+	describe('AddProcessToScene',function(done){
+
+		var resultScene;
+		var store;
+
+		before(function(done){
+			var store = new SceneStore(storeConfig);
+			var scene = {
+				resource:{'type':'url','location':'http://la.com'},
+				tags:['testing'],
+				dateCreated:new Date()
+			};
+
+
+			store.Add(scene)
+				.then(function(scene){
+					return store.AddProcessToScene(scene,{ foo:'I am a process. Yey.' });
+				}).then(function(scene){
+					resultScene = scene;
+					console.log(resultScene);
+					done();
+				}).catch(done);
+		});
+
+		it('should return the scene that\'s been updated with the new process',function(){
+			expect(resultScene.processes).to.be.an(Array);
+			expect(resultScene.processes.length).to.be(1);
+			expect(resultScene.processes[0].foo).to.be('I am a process. Yey.');
+		});
+	});
 });
 
