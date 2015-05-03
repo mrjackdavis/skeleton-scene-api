@@ -141,9 +141,10 @@ describe('API endpoint',function(){
 						}
 					})
 					.then(function(res){
-						var location = res.headers.location;
+						var location = (res.headers.location+'/processes').replace('http://127.0.0.1','');
+						console.log(location);
 						return request(app)
-							.post(location+'/processes')
+							.post(location)
 							.send({
 								'status':'InProgress'
 							});
@@ -168,7 +169,7 @@ describe('API endpoint',function(){
 
 			it('should return a `Location` header with a link to the newly-created resource',function(){
 				expect(response.headers).to.have.key('location');
-				expect(response.headers.location).to.be('http://127.0.0.1/scene/1/processes/0');
+				expect(response.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/scene\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}\/processes\/0$/);
 			});
 
 			it('should respond with code 201 upon success',function(){
