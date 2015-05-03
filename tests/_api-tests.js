@@ -198,12 +198,9 @@ describe('API endpoint',function(){
 				request(app).get(sceneLocation)
 					.then(function(getRes){
 						expect(getRes.statusCode).to.be(200);
-
-						var index = getRes.body.length - 1;
-						console.log(getRes.body[index]);
-						expect(getRes.body[index].processes).to.be.an(Array);
-						expect(getRes.body[index].processes.length).to.be(1);
-						expect(getRes.body[index].processes[0].status).to.eql('IN_PROGRESS');
+						expect(getRes.body.processes).to.be.an(Array);
+						expect(getRes.body.processes.length).to.be(1);
+						expect(getRes.body.processes[0].status).to.eql('IN_PROGRESS');
 						done();
 					})
 					.catch(done);
