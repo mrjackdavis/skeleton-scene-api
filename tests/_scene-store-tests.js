@@ -15,10 +15,10 @@ describe('SceneStore',function(){
 		appConfigGetter().then(function(config){
 			storeConfig = {
 				AWS_CREDENTIALS:{
-					accessKeyId:config.TEST_AWS_CREDENTIALS.accessKeyId,
-					secretAccessKey:config.TEST_AWS_CREDENTIALS.secretAccessKey
-					// accessKeyId:'hocus',
-					// secretAccessKey:'pocus'
+					// accessKeyId:config.TEST_AWS_CREDENTIALS.accessKeyId,
+					// secretAccessKey:config.TEST_AWS_CREDENTIALS.secretAccessKey
+					accessKeyId:'hocus',
+					secretAccessKey:'pocus'
 				},
 				endpoint:'http://127.0.0.1:'+DYNAMO_PORT
 			};
