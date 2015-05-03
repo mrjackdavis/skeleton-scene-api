@@ -162,5 +162,29 @@ describe('SceneStore',function(){
 				}).catch(done);
 		});
 	});
+	describe('UpdateProcess',function(){
+		it('should update the process at a specific index',function(done){
+			this.timeout(5000);
+			var store = new SceneStore(storeConfig);
+			var scene = {
+				resource:{'type':'url','location':'http://UpdateProcess.com'},
+				tags:['testing']
+			};
+
+			store.Add(scene)
+				.then(function(scene){
+					return store.AddProcessToScene(scene,{ status:'IN_PROGRESS' });
+				}).then(function(scene){
+					return store.AddProcessToScene(scene,{ status:'PAUSED' });
+				}).then(function(scene){
+					return store.UpdateProcess(scene,1,{status:'COMPLETE'});
+				}).then(function(scene){
+					expect(scene.processes[0].status).to.be('IN_PROGRESS');
+					expect(scene.processes[1].status).to.be('COMPLETE');
+					done();
+				}).catch(done);
+		});
+	});
+
 });
 
