@@ -48,7 +48,6 @@ describe('SceneStore',function(){
 
 			store.Add(scene)
 				.then(function(scene){
-					console.log(scene);
 					expect(scene).to.be.ok();
 					expect(scene.sceneID).to.be.a('string');
 					expect(scene.dateCreated).to.be.a(Date);
