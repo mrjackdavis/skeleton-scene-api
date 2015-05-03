@@ -220,6 +220,7 @@ describe('API endpoint',function(){
 	describe('/scene/{hash}/{timestamp}/processes/{id}',function(){
 		describe('PUT',function(){
 			it('should update process status',function(done){
+				var sceneLocation;
 				request(app)
 					.post('/scene')
 					.send({
@@ -229,7 +230,8 @@ describe('API endpoint',function(){
 						}
 					})
 					.then(function(res){
-						var loc = res.headers.location.replace('http://127.0.0.1','')+'/processes';
+						sceneLocation = res.headers.location.replace('http://127.0.0.1','');
+						var loc = sceneLocation+'/processes';
 						return request(app)
 							.post(loc)
 							.send({
@@ -247,11 +249,11 @@ describe('API endpoint',function(){
 					})
 					.then(function(res){
 						return request(app)
-							.get('/scene');
+							.get(sceneLocation);
 					})
 					.then(function(res){
-						expect(res.body[res.body.length-1].processes[0].status).to.be('COMPLETE');
-						expect(res.body[res.body.length-1].processes[0].result).to.be('http://my.awesome/result');
+						expect(res.body.processes[0].status).to.be('COMPLETE');
+						expect(res.body.processes[0].result).to.be('http://my.awesome/result');
 						done();
 					})
 					.catch(done);
