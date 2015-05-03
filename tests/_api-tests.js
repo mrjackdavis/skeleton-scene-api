@@ -3,7 +3,7 @@ var request = require('supertest-as-promised');
 var expect = require('expect.js');
 var AppFactory = require('../lib/AppFactory');
 var appConfigGetter = require('../lib/AppConfig');
-var MockDynamo = require('./local-dynamo');
+var MockDynamo = require('./MockDynamo');
 
 var DYNAMO_PORT = 4567;
 
@@ -14,6 +14,7 @@ describe('API endpoint',function(){
 	var app;
 
 	before(function(done){
+		this.timeout(5000);
 		mockDynamo.Start(DYNAMO_PORT)
 			.then(function(){
 				return appConfigGetter();

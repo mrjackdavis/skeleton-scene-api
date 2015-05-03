@@ -2,7 +2,7 @@ var NotImpementedError = require('../lib/NotImplementedError');
 var expect = require('expect.js');
 var SceneStore = require('../lib/stores/SceneStore');
 var appConfigGetter = require('../lib/AppConfig');
-var MockDynamo = require('./local-dynamo');
+var MockDynamo = require('./MockDynamo');
 var Promise = require('Promise');
 
 var DYNAMO_PORT = 4567;
@@ -20,9 +20,8 @@ describe('SceneStore',function(){
 					// accessKeyId:'hocus',
 					// secretAccessKey:'pocus'
 				},
-				// endpoint:'http://127.0.0.1:'+DYNAMO_PORT
+				endpoint:'http://127.0.0.1:'+DYNAMO_PORT
 			};
-			console.log(storeConfig);
 		}).then(function(){
 			return mockDynamo.Start(DYNAMO_PORT);
 		}).then(function(){
@@ -82,6 +81,7 @@ describe('SceneStore',function(){
 	});
 	describe('GetRange',function(done){
 		it('should return most recent scenes 100 by default',function(done){
+			this.timeout(6000);
 			var store = new SceneStore(storeConfig);
 
 			// Add over 100 items
@@ -156,7 +156,6 @@ describe('SceneStore',function(){
 				}).then(function(scene){
 					return store.AddProcessToScene(scene,{ status:'COMPLETE' });
 				}).then(function(scene){
-					console.log(scene);
 					expect(scene.processes).to.be.an(Array);
 					expect(scene.processes.length).to.be(2);
 					done();
