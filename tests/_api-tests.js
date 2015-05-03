@@ -123,12 +123,11 @@ describe('API endpoint',function(){
 			});
 			it('should return a `Location` header with a link to the newly-created resource',function(){
 				expect(response.headers).to.have.key('location');
-				expect(response.headers.location).to.contain('http://127.0.0.1/scene/');
-				expect(response.headers.location).not.to.contain('undefined');
+				expect(response.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/scene\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
 			});
 		});
 	});
-	describe('/scene/{id}/processes',function(){
+	describe('/scene/{hash}/{date}/processes',function(){
 		describe('POST',function(){
 			var response;
 
