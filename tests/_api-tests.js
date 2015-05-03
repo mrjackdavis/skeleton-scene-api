@@ -89,6 +89,7 @@ describe('API endpoint',function(){
 				expect(response.body).to.be.an(Array);
 				expect(response.body.length).to.be(1);
 				expect(response.body[0].sceneID).to.be.a('string');
+				expect(response.body[0].dateCreated).to.be.a('number');
 				expect(response.body[0].resource).to.be.ok();
 				expect(response.body[0].resource.type).to.be('url');
 				expect(response.body[0].resource.location).to.be('http://www.google.com');
@@ -157,6 +158,7 @@ describe('API endpoint',function(){
 
 			it('should return scene in body',function(){
 				expect(getRes.body).to.be.ok();
+				expect(getRes.body.dateCreated).to.be.a('number');
 				expect(getRes.body.resource).to.be.ok();
 				expect(getRes.body.resource.location).to.be('http://www.lahlah.com');
 			});
