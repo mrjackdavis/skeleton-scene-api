@@ -127,9 +127,46 @@ describe('API endpoint',function(){
 			});
 		});
 	});
-	describe('/scene/{hash}/{date}/processes',function(){
+
+	describe('/scene/{hash}/{timestamp}',function(){
+		describe('GET',function(){
+			var getRes;
+			before(function(done){
+				request(app)
+					.post('/scene')
+					.send({
+						resource:{
+							type:'url',
+							location:'http://www.lahlah.com'
+						}
+					})
+					.then(function(res){
+						return request(app)
+							.get(res.headers.location.replace('http://127.0.0.1',''));
+					})
+					.then(function(res){
+						getRes = res;
+						done();
+					})
+					.catch(done);
+			});
+
+			it('should return scene in body',function(){
+				expect(getRes.body).to.be.ok();
+				expect(getRes.body.resource).to.be.ok();
+				expect(getRes.body.resource.location).to.be('http://www.lahlah.com');
+			});
+
+			it('should return 200 statusCode',function(){
+				expect(getRes.statusCode).to.be(200);
+			});
+		});
+	});
+
+	describe('/scene/{hash}/{timestamp}/processes',function(){
 		describe('POST',function(){
 			var response;
+			var sceneLocation;
 
 			before(function(done){
 				request(app)
@@ -141,27 +178,32 @@ describe('API endpoint',function(){
 						}
 					})
 					.then(function(res){
-						var location = (res.headers.location+'/processes').replace('http://127.0.0.1','');
-						console.log(location);
+						sceneLocation = res.headers.location.replace('http://127.0.0.1','');
+						var location = sceneLocation+'/processes';
 						return request(app)
 							.post(location)
 							.send({
-								'status':'InProgress'
+								'status':'IN_PROGRESS'
 							});
 					})
 					.then(function(res){
 						response = res;
+						expect(res.statusCode).to.be(201);
 						done();
 					})
 					.catch(done);
 			});
 
 			it('should create a new process for the desired scene',function(done){
-				request(app).get('/scene')
+				request(app).get(sceneLocation)
 					.then(function(getRes){
-						expect(getRes.body[1].processes).to.be.an(Array);
-						expect(getRes.body[1].processes.length).to.be(1);
-						expect(getRes.body[1].processes[0].status).to.eql('InProgress');
+						expect(getRes.statusCode).to.be(200);
+
+						var index = getRes.body.length - 1;
+						console.log(getRes.body[index]);
+						expect(getRes.body[index].processes).to.be.an(Array);
+						expect(getRes.body[index].processes.length).to.be(1);
+						expect(getRes.body[index].processes[0].status).to.eql('IN_PROGRESS');
 						done();
 					})
 					.catch(done);
@@ -178,7 +220,7 @@ describe('API endpoint',function(){
 		});
 
 	});
-	describe('/scene/{id}/processes/{id}',function(){
+	describe('/scene/{hash}/{timestamp}/processes/{id}',function(){
 		describe('PUT',function(){
 			it('should update process status',function(done){
 				request(app)
@@ -194,7 +236,7 @@ describe('API endpoint',function(){
 						return request(app)
 							.post(loc)
 							.send({
-								'status':'InProgress'
+								'status':'IN_PROGRESS'
 							});
 					})
 					.then(function(res){
@@ -202,7 +244,7 @@ describe('API endpoint',function(){
 						return request(app)
 							.put(loc)
 							.send({
-								'status':'Complete',
+								'status':'COMPLETE',
 								'result':'http://my.awesome/result'
 							});
 					})
@@ -211,7 +253,7 @@ describe('API endpoint',function(){
 							.get('/scene');
 					})
 					.then(function(res){
-						expect(res.body[res.body.length-1].processes[0].status).to.be('Complete');
+						expect(res.body[res.body.length-1].processes[0].status).to.be('COMPLETE');
 						expect(res.body[res.body.length-1].processes[0].result).to.be('http://my.awesome/result');
 						done();
 					})
@@ -231,7 +273,7 @@ describe('API endpoint',function(){
 						return request(app)
 							.post(loc)
 							.send({
-								'status':'InProgress'
+								'status':'IN_PROGRESS'
 							});
 					})
 					.then(function(res){
@@ -239,7 +281,7 @@ describe('API endpoint',function(){
 						return request(app)
 							.put(loc)
 							.send({
-								'status':'Complete'
+								'status':'COMPLETE'
 							});
 					})
 					.then(function(res){
