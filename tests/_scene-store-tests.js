@@ -15,11 +15,12 @@ describe('SceneStore',function(){
 		appConfigGetter().then(function(config){
 			storeConfig = {
 				AWS_CREDENTIALS:{
-					accessKeyId:'hocus',
-					secretAccessKey:'pocus'
+					accessKeyId:config.TEST_AWS_CREDENTIALS.accessKeyId,
+					secretAccessKey:config.TEST_AWS_CREDENTIALS.secretAccessKey
 				},
-				endpoint:'http://127.0.0.1:'+DYNAMO_PORT
+				// endpoint:'http://127.0.0.1:'+DYNAMO_PORT
 			};
+			console.log(storeConfig);
 		}).then(function(){
 			return mockDynamo.Start(DYNAMO_PORT);
 		}).then(function(){
@@ -123,7 +124,7 @@ describe('SceneStore',function(){
 		before(function(done){
 			var store = new SceneStore(storeConfig);
 			var scene = {
-				resource:{'type':'url','location':'http://la.com'},
+				resource:{'type':'url','location':'http://AddProcessToScene.com'},
 				tags:['testing'],
 				dateCreated:new Date()
 			};
@@ -131,7 +132,7 @@ describe('SceneStore',function(){
 
 			store.Add(scene)
 				.then(function(scene){
-					return store.AddProcessToScene(scene,{ foo:'I am a process. Yey.' });
+					return store.AddProcessToScene(scene,{ status:'IN_PROGRESS' });
 				}).then(function(scene){
 					resultScene = scene;
 					console.log(resultScene);
@@ -142,7 +143,7 @@ describe('SceneStore',function(){
 		it('should return the scene that\'s been updated with the new process',function(){
 			expect(resultScene.processes).to.be.an(Array);
 			expect(resultScene.processes.length).to.be(1);
-			expect(resultScene.processes[0].foo).to.be('I am a process. Yey.');
+			expect(resultScene.processes[0].status).to.be('IN_PROGRESS');
 		});
 	});
 });
