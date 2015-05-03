@@ -17,6 +17,8 @@ describe('SceneStore',function(){
 				AWS_CREDENTIALS:{
 					accessKeyId:config.TEST_AWS_CREDENTIALS.accessKeyId,
 					secretAccessKey:config.TEST_AWS_CREDENTIALS.secretAccessKey
+					// accessKeyId:'hocus',
+					// secretAccessKey:'pocus'
 				},
 				// endpoint:'http://127.0.0.1:'+DYNAMO_PORT
 			};
@@ -118,15 +120,14 @@ describe('SceneStore',function(){
 
 	describe('AddProcessToScene',function(done){
 
-		var resultScene;
 		var store;
 
-		before(function(done){
+		it('should return the scene that\'s been updated with the new process',function(done){
+			this.timeout(5000);
 			var store = new SceneStore(storeConfig);
 			var scene = {
 				resource:{'type':'url','location':'http://AddProcessToScene.com'},
-				tags:['testing'],
-				dateCreated:new Date()
+				tags:['testing']
 			};
 
 
@@ -134,16 +135,32 @@ describe('SceneStore',function(){
 				.then(function(scene){
 					return store.AddProcessToScene(scene,{ status:'IN_PROGRESS' });
 				}).then(function(scene){
-					resultScene = scene;
-					console.log(resultScene);
+					expect(scene.processes).to.be.an(Array);
+					expect(scene.processes.length).to.be(1);
+					expect(scene.processes[0].status).to.be('IN_PROGRESS');
 					done();
 				}).catch(done);
 		});
 
-		it('should return the scene that\'s been updated with the new process',function(){
-			expect(resultScene.processes).to.be.an(Array);
-			expect(resultScene.processes.length).to.be(1);
-			expect(resultScene.processes[0].status).to.be('IN_PROGRESS');
+		it('should support multiple processes',function(done){
+			this.timeout(5000);
+			var store = new SceneStore(storeConfig);
+			var scene = {
+				resource:{'type':'url','location':'http://AddProcessToScene2.com'},
+				tags:['testing']
+			};
+
+			store.Add(scene)
+				.then(function(scene){
+					return store.AddProcessToScene(scene,{ status:'IN_PROGRESS' });
+				}).then(function(scene){
+					return store.AddProcessToScene(scene,{ status:'COMPLETE' });
+				}).then(function(scene){
+					console.log(scene);
+					expect(scene.processes).to.be.an(Array);
+					expect(scene.processes.length).to.be(2);
+					done();
+				}).catch(done);
 		});
 	});
 });
