@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "gulp test",
-    "start":"node index.js"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -22,17 +22,24 @@
   "homepage": "https://github.com/mrjackdavis/skeleton-scene-api",
   "devDependencies": {
     "bluebird": "^2.9.14",
+    "del": "^1.1.1",
     "expect.js": "^0.3.1",
     "gulp": "^3.8.11",
     "gulp-jshint": "^1.9.2",
     "gulp-mocha": "^2.0.0",
     "jshint-stylish": "^1.0.1",
+    "local-dynamo": "0.0.5",
+    "mkdirp": "^0.5.0",
     "supertest": "^0.15.0",
     "supertest-as-promised": "^1.0.0"
   },
   "dependencies": {
+    "aws-sdk": "^2.1.24",
     "body-parser": "^1.12.2",
     "express": "^4.12.2",
-    "mongodb": "^1.4.34"
+    "joi": "^6.4.1",
+    "object-hash": "^0.5.0",
+    "promise": "^7.0.0",
+    "vogels": "^2.0.0-rc9"
   }
 }
