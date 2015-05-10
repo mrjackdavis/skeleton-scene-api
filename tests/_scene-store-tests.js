@@ -80,23 +80,25 @@ describe('SceneStore',function(){
 		});
 	});
 	describe('GetRange',function(done){
-		it('should return most recent scenes 100 by default',function(done){
+		it('should return most recent scenes 25 by default',function(done){
 			this.timeout(6000);
 			var store = new SceneStore(storeConfig);
 
-			// Add over 100 items
+			var latestDate;
+			// Add over 25 items
 			store.GetRange().then(function(scenes){
 					expect(scenes).to.be.an(Array);
 
 					var i = scenes.length;
 					var promises = [];
 
-					while(i-1 < 110){
+
+					while(i <= 35){
+						latestDate = new Date(Date.now()+i*360);
 						var scene = {
 							resource:{'type':'url','location':'http://'+i+'.lala'},
-							processes:[],
 							tags:['testing'],
-							dateCreated:new Date()
+							dateCreated:latestDate
 						};
 
 						promises.push(store.Add(scene));
@@ -106,13 +108,16 @@ describe('SceneStore',function(){
 
 					return Promise.all(promises);
 				})
-				.then(store.GetRange())
+				.then(function(promises){
+					return store.GetRange();
+				})
 				.then(function(scenes){
-					if(scenes.length === 110){
-						console.warn('Test inconclusive; library is probably broken');
-					}else{
-						expect(scenes.length).to.be(100);
-					}
+					expect(scenes.length).to.be(25);
+
+					// DynamoDB sucks at sorting
+
+					// expect(scenes[0].dateCreated).to.eql(latestDate);
+					// expect(scenes[0].dateCreated.getTime()).to.be.greaterThan(scenes[1].dateCreated.getTime());
 					done();
 				}).catch(done);
 		});
