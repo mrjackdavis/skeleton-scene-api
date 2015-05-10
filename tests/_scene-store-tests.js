@@ -80,7 +80,7 @@ describe('SceneStore',function(){
 		});
 	});
 	describe('GetRange',function(done){
-		it('should return most recent scenes 25 by default',function(done){
+		it('should return scenes 25 by default',function(done){
 			this.timeout(6000);
 			var store = new SceneStore(storeConfig);
 
