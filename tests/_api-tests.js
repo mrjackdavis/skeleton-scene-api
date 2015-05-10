@@ -46,13 +46,12 @@ describe('API endpoint',function(){
 				expect(res.header).to.have.keys([
 					'access-control-allow-origin',
 					'access-control-allow-methods',
-					'access-control-allow-headers',
-					'access-control-allow-credentials']);
+					'access-control-allow-headers']);
 
-				expect(res.header['access-control-allow-origin']).to.be('http://skeleton-scene-app-web.s3-website-ap-southeast-2.amazonaws.com');
+				expect(res.header['access-control-allow-origin']).to.be('*');
 				expect(res.header['access-control-allow-methods']).to.be('GET, POST, OPTIONS, PUT, PATCH, DELETE');
 				expect(res.header['access-control-allow-headers']).to.be('X-Requested-With,content-type');
-				expect(res.header['access-control-allow-credentials']).to.be('true');
+				expect(res.header['access-control-allow-credentials']).to.be(undefined);
 
 				done();
 			}).catch(function(err){
