@@ -1,4 +1,4 @@
-var NotImpementedError = require('../lib/NotImplementedError');
+var NotImplementedError = require('../lib/NotImplementedError');
 var expect = require('expect.js');
 var SceneStore = require('../lib/stores/SceneStore');
 var appConfigGetter = require('../lib/AppConfig');
@@ -9,7 +9,6 @@ var DYNAMO_PORT = 4567;
 
 describe('SceneStore',function(){
 	var storeConfig;
-	var mockDynamo = new MockDynamo('./tmp/mockDynamo-scene-store-tests');
 
 	before(function(done){
 		appConfigGetter().then(function(config){
@@ -23,17 +22,25 @@ describe('SceneStore',function(){
 				endpoint:'http://127.0.0.1:'+DYNAMO_PORT
 			};
 		}).then(function(){
-			return mockDynamo.Start(DYNAMO_PORT);
-		}).then(function(){
-			var store = new SceneStore(storeConfig);
-			return store.SetupDb();
-		}).then(function(){
 			done();
 		}).catch(done);
 	});
 
-	after(function(done){
-		mockDynamo.Stop().then(done);
+	var mockDynamo;
+	beforeEach(function(done){
+		var tmpDir = './tmp/mockDynamo-'+(this.currentTest.fullTitle().replace(/\W/g,'-'));
+		mockDynamo = new MockDynamo(tmpDir);
+		mockDynamo.Start(DYNAMO_PORT)
+			.then(function(){
+				var store = new SceneStore(storeConfig);
+				return store.SetupDb();
+			}).then(function(){
+				done();
+			}).catch(done);
+	});
+
+	afterEach(function(done){
+		mockDynamo.Stop().then(done).catch(done);
 	});
 
 	describe('Add and get',function(){
@@ -120,6 +127,17 @@ describe('SceneStore',function(){
 					// expect(scenes[0].dateCreated.getTime()).to.be.greaterThan(scenes[1].dateCreated.getTime());
 					done();
 				}).catch(done);
+		});
+	});
+
+	describe('GetNextForProcessing',function(done){
+		it('should return the next scene to be processed',function(done){
+			var store = new SceneStore(storeConfig);
+			var scene = {
+				resource:{'type':'url','location':'http://GetNextForProcessing.com'},
+				tags:['testing']
+			};
+			done(new NotImplementedError('GetNextForProcessing should return the next scene to be processed'));
 		});
 	});
 
