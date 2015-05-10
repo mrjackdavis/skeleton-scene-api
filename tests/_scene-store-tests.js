@@ -130,17 +130,6 @@ describe('SceneStore',function(){
 		});
 	});
 
-	describe('GetNextForProcessing',function(done){
-		it('should return the next scene to be processed',function(done){
-			var store = new SceneStore(storeConfig);
-			var scene = {
-				resource:{'type':'url','location':'http://GetNextForProcessing.com'},
-				tags:['testing']
-			};
-			done(new NotImplementedError('GetNextForProcessing should return the next scene to be processed'));
-		});
-	});
-
 	describe('AddProcessToScene',function(done){
 
 		var store;
