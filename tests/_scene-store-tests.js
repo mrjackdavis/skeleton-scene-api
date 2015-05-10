@@ -133,11 +133,31 @@ describe('SceneStore',function(){
 	describe('GetNextForProcessing',function(done){
 		it('should return the next scene to be processed',function(done){
 			var store = new SceneStore(storeConfig);
-			var scene = {
-				resource:{'type':'url','location':'http://GetNextForProcessing.com'},
+			var scene1 = {
+				resource:{'type':'url','location':'http://GetNextForProcessing1.com'},
+				tags:['testing'],
+				processes:[{status:'IN_PROGRESS'}]
+			};
+			var scene2 = {
+				resource:{'type':'url','location':'http://GetNextForProcessing2.com'},
 				tags:['testing']
 			};
-			done(new NotImplementedError('GetNextForProcessing should return the next scene to be processed'));
+			var scene3 = {
+				resource:{'type':'url','location':'http://GetNextForProcessing3.com'},
+				tags:['testing'],
+				processes:[{status:'COMPLETE'}]
+			};
+
+			store.Add(scene1)
+				.then(function(){ return store.Add(scene2); })
+				.then(function(){ return store.Add(scene3); })
+				.then(function(){
+					return store.GetNextForProcessing();
+				})
+				.then(function(scene){
+					expect(scene.resource.location).to.be('http://GetNextForProcessing2.com');
+					done();
+				}).catch(done);
 		});
 	});
 
