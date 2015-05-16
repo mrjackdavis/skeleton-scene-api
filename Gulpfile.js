@@ -5,7 +5,7 @@ var del = require('del');
 var istanbul = require('gulp-istanbul');
 
 var manifest = {
-	js:['./tests/**.js','./lib/**.js','./*.js'],
+	js:['./tests/**/*.js','./lib/**/*.js','./*.js'],
 	tests:['./tests/**.js'],
 };
 
