@@ -140,6 +140,17 @@ describe('SceneStore',function(){
 				}).then(done).catch(done);
 		});
 
+		it('should delete requested scene',function(done){
+			var store = new SceneStore(storeConfig);
+			store.GetRequest({
+				sceneID:completedScene.sceneID,
+				createdAt:completedScene.requestedAt
+			})
+				.then(function(scene){
+					expect(scene).to.be(null);
+				}).then(done).catch(done);
+		});
+
 		function verifyScene(scene){
 			expect(scene).to.be.ok();
 			expect(scene.completedAt).to.be.a('number');
