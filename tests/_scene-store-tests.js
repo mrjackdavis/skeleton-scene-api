@@ -72,15 +72,10 @@ describe('SceneStore',function(){
 					store = new SceneStore(storeConfig);
 
 					return store
-						.GetRequest({sceneID:params.sceneID, dateCreated:params.dateCreated})
+						.GetRequest({sceneID:scene.sceneID, createdAt:scene.createdAt})
 						.then(function(scene2){
-							expect(scene2).to.be.ok();
-							expect(scene2.sceneID).to.be(params.sceneID);
-							expect(scene2.dateCreated).to.eql(params.dateCreated);
-							expect(scene2.resource).to.be.an(Object);
-							expect(scene2.tags).to.contain('testing');
-							expect(scene2.processes).to.be.an(Array);
-							expect(scene2.resource.location).to.be(params.resource.location);
+							// expect(scene2).to.be.ok();
+							expect(scene2).to.eql(scene);
 						});
 				}).then(function(){
 					done();
