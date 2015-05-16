@@ -102,6 +102,57 @@ describe('SceneStore',function(){
 		});
 	});
 
+	describe('CompleteSceneRequest',function(){
+		var params = {
+			resourceType:'URL',
+			resourceURI:'http://la.com',
+			generatorName:'Snowflake',
+			tags:['testing']
+		};
+
+		var completionStatus = 'SUCCESSFUL';
+		var result = {
+			type:'IMAGE',
+			URI:'http://la.com'
+		};
+		var completedScene;
+
+		before(function(done){
+			var store = new SceneStore(storeConfig);
+			store.NewRequest(params)
+				.then(function(scene){
+					return store.CompleteSceneRequest(scene,completionStatus,result);
+				}).then(function(scene){
+					completedScene = scene;
+					done();
+				}).catch(done);
+		});
+
+		it('should return new scene',function(){
+			verifyScene(completedScene);
+		});
+
+		it('should create new scene if it was completed successfully',function(done){
+			var store = new SceneStore(storeConfig);
+			store.GetScene(completedScene)
+				.then(function(scene){
+					verifyScene(scene);
+				}).then(done).catch(done);
+		});
+
+		function verifyScene(scene){
+			expect(scene).to.be.ok();
+			expect(scene.completedAt).to.be.a('number');
+			expect(scene.generatorName).to.be(params.generatorName);
+			expect(scene.resourceType).to.be(params.resourceType);
+			expect(scene.resourceURI).to.be(params.resourceURI);
+			expect(scene.tags).to.eql(params.tags);
+
+			expect(scene.resultType).to.eql(result.type);
+			expect(scene.resultURI).to.eql(result.URI);
+		}
+	});
+
 	describe('GetRange',function(done){
 		it('should return scenes 25 by default',function(done){
 			this.timeout(6000);
