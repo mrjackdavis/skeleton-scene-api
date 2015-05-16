@@ -23,7 +23,7 @@ MockDynamo.prototype.Start = function(port) {
 				// 		resolve();
 				// 	}
 				// });
-				localDynamo.launch(self.filePath, port);
+				self.process = localDynamo.launch(self.filePath, port);
 				resolve();
 			}
 		});
@@ -33,15 +33,10 @@ MockDynamo.prototype.Start = function(port) {
 MockDynamo.prototype.Stop = function(port) {
 	var self = this;
 	return new Promise(function(resolve,reject){
-		// self.server.close(function(err){
-		// 	if(err){
-		// 		reject(err);
-		// 	}else{
-
-		// 		resolve();
-		// 	}
-		// });
-		resolve();
+		self.process.on('close', function (code, signal) {
+			resolve();
+		});
+		self.process.kill();
 	});
 };
 

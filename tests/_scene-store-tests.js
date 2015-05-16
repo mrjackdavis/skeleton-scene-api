@@ -1,9 +1,12 @@
 var NotImplementedError = require('../lib/NotImplementedError');
 var expect = require('expect.js');
+var Promise = require('Promise');
+
 var SceneStore = require('../lib/stores/SceneStore');
 var appConfigGetter = require('../lib/AppConfig');
+var statusTypes = require('../lib/stores/SceneRequestStatusTypes');
+
 var MockDynamo = require('./MockDynamo');
-var Promise = require('Promise');
 
 var DYNAMO_PORT = 4567;
 
@@ -43,27 +46,28 @@ describe('SceneStore',function(){
 		mockDynamo.Stop().then(done).catch(done);
 	});
 
-	describe('Add and get',function(){
-		it('should create and retrieve a new item respectively',function(done){
+	describe('Scene Requests',function(){
+		it('should create and retrieve new requests respectively',function(done){
 			this.timeout(10000);
 			var store = new SceneStore(storeConfig);
 
 			var scene = {
-				resource:{'type':'url','location':'http://la.com'},
-				processes:[],
-				tags:['testing'],
-				dateCreated:new Date()
+				resourceType:'url',
+				resourceURI:'http://la.com',
+				generatorName:'Snowflake',
+				tags:['testing']
 			};
 
-			store.Add(scene)
+			store.NewRequest(scene)
 				.then(function(scene){
 					expect(scene).to.be.ok();
 					expect(scene.sceneID).to.be.a('string');
-					expect(scene.dateCreated).to.be.a(Date);
-					expect(scene.resource).to.be.an(Object);
-					expect(scene.processes).to.be.an(Array);
+					expect(scene.createdAt).to.be.a(Number);
+					expect(scene.resourceType).to.be('URL');
+					expect(scene.resourceURI).to.be('http://la.com');
+					expect(scene.status).to.be(statusTypes.Pending);
 					expect(scene.tags).to.be.an(Array);
-					expect(scene.resource.location).to.be('http://la.com');
+					expect(scene.tags).to.contain('testing');
 
 					return scene;
 				}).then(function(scene){
@@ -71,7 +75,7 @@ describe('SceneStore',function(){
 					store = new SceneStore(storeConfig);
 
 					return store
-						.Get({sceneID:scene.sceneID, dateCreated:scene.dateCreated})
+						.GetRequest({sceneID:scene.sceneID, dateCreated:scene.dateCreated})
 						.then(function(scene2){
 							expect(scene2).to.be.ok();
 							expect(scene2.sceneID).to.be(scene.sceneID);
@@ -86,6 +90,7 @@ describe('SceneStore',function(){
 				}).catch(done);
 		});
 	});
+
 	describe('GetRange',function(done){
 		it('should return scenes 25 by default',function(done){
 			this.timeout(6000);
