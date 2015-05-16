@@ -83,6 +83,25 @@ describe('SceneStore',function(){
 		});
 	});
 
+	describe('SetSceneRequestStatus',function(){
+		it('should update the status of a request',function(done){
+			var store = new SceneStore(storeConfig);
+			var params = {
+				resourceType:'URL',
+				resourceURI:'http://la.com',
+				generatorName:'Snowflake',
+				tags:['testing']
+			};
+
+			store.NewRequest(params)
+				.then(function(scene){
+					return store.SetSceneRequestStatus(scene,'IN_PROGRESS');
+				}).then(function(scene){
+					expect(scene.status).to.be('IN_PROGRESS');
+				}).then(done).catch(done);
+		});
+	});
+
 	describe('GetRange',function(done){
 		it('should return scenes 25 by default',function(done){
 			this.timeout(6000);
