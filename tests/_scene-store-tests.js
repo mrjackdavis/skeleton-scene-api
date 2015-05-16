@@ -12,6 +12,7 @@ var DYNAMO_PORT = 4567;
 
 describe('SceneStore',function(){
 	var storeConfig;
+	var mockDynamo;
 
 	before(function(done){
 		appConfigGetter().then(function(config){
@@ -25,24 +26,18 @@ describe('SceneStore',function(){
 				endpoint:'http://127.0.0.1:'+DYNAMO_PORT
 			};
 		}).then(function(){
-			done();
-		}).catch(done);
+			var tmpDir = './tmp/mockDynamo-scene-store-tests';
+			mockDynamo = new MockDynamo(tmpDir);
+			return mockDynamo.Start(DYNAMO_PORT);
+		})
+		.then(function(){
+			var store = new SceneStore(storeConfig);
+			return store.SetupDb();
+		}).then(done).catch(done);
 	});
 
-	var mockDynamo;
-	beforeEach(function(done){
-		var tmpDir = './tmp/mockDynamo-'+(this.currentTest.fullTitle().replace(/\W/g,'-'));
-		mockDynamo = new MockDynamo(tmpDir);
-		mockDynamo.Start(DYNAMO_PORT)
-			.then(function(){
-				var store = new SceneStore(storeConfig);
-				return store.SetupDb();
-			}).then(function(){
-				done();
-			}).catch(done);
-	});
 
-	afterEach(function(done){
+	after(function(done){
 		mockDynamo.Stop().then(done).catch(done);
 	});
 
@@ -51,14 +46,14 @@ describe('SceneStore',function(){
 			this.timeout(10000);
 			var store = new SceneStore(storeConfig);
 
-			var scene = {
+			var params = {
 				resourceType:'url',
 				resourceURI:'http://la.com',
 				generatorName:'Snowflake',
 				tags:['testing']
 			};
 
-			store.NewRequest(scene)
+			store.NewRequest(params)
 				.then(function(scene){
 					expect(scene).to.be.ok();
 					expect(scene.sceneID).to.be.a('string');
@@ -75,15 +70,15 @@ describe('SceneStore',function(){
 					store = new SceneStore(storeConfig);
 
 					return store
-						.GetRequest({sceneID:scene.sceneID, dateCreated:scene.dateCreated})
+						.GetRequest({sceneID:params.sceneID, dateCreated:params.dateCreated})
 						.then(function(scene2){
 							expect(scene2).to.be.ok();
-							expect(scene2.sceneID).to.be(scene.sceneID);
-							expect(scene2.dateCreated).to.eql(scene.dateCreated);
+							expect(scene2.sceneID).to.be(params.sceneID);
+							expect(scene2.dateCreated).to.eql(params.dateCreated);
 							expect(scene2.resource).to.be.an(Object);
 							expect(scene2.tags).to.contain('testing');
 							expect(scene2.processes).to.be.an(Array);
-							expect(scene2.resource.location).to.be(scene.resource.location);
+							expect(scene2.resource.location).to.be(params.resource.location);
 						});
 				}).then(function(){
 					done();
