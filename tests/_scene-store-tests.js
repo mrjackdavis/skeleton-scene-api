@@ -4,7 +4,9 @@ var Promise = require('Promise');
 
 var SceneStore = require('../lib/stores/SceneStore');
 var appConfigGetter = require('../lib/AppConfig');
-var statusTypes = require('../lib/stores/SceneRequestStatusTypes');
+var sceneEnums = require('../lib/stores/SceneEnums');
+var statusTypes = sceneEnums.StatusTypes;
+var resourceTypes = sceneEnums.ResourceTypes;
 
 var MockDynamo = require('./MockDynamo');
 
@@ -47,7 +49,7 @@ describe('SceneStore',function(){
 			var store = new SceneStore(storeConfig);
 
 			var params = {
-				resourceType:'url',
+				resourceType:'URL',
 				resourceURI:'http://la.com',
 				generatorName:'Snowflake',
 				tags:['testing']
@@ -57,8 +59,8 @@ describe('SceneStore',function(){
 				.then(function(scene){
 					expect(scene).to.be.ok();
 					expect(scene.sceneID).to.be.a('string');
-					expect(scene.createdAt).to.be.a(Number);
-					expect(scene.resourceType).to.be('URL');
+					expect(scene.createdAt).to.be.a('number');
+					expect(scene.resourceType).to.be(resourceTypes.Url);
 					expect(scene.resourceURI).to.be('http://la.com');
 					expect(scene.status).to.be(statusTypes.Pending);
 					expect(scene.tags).to.be.an(Array);
