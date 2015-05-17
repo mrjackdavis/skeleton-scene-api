@@ -100,17 +100,19 @@ describe('API endpoint',function(){
 				expect(response.statusCode).to.be(200);
 			});
 		});
+	});
+	
+	describe('/scene-requests/',function(){
 		describe('POST',function(){
 			var response;
 
 			before(function(done){
 				request(app)
-					.post('/scene')
+					.post('/scene-requests')
 					.send({
-						resource:{
-							type:'url',
-							location:'http://www.youtube.com'
-						}
+						resourceType:'URL',
+						resourceURI:'http://www.youtube.com',
+						generatorName:'Bob Marley'
 					})
 					.then(function(res){
 						response = res;
@@ -119,15 +121,12 @@ describe('API endpoint',function(){
 					.catch(done);
 			});
 
-			// it('should create a new scene',function(){
-			// 	throw new NotImpementedError();
-			// });
 			it('should respond with code 201 upon success',function(){
 				expect(response.statusCode).to.be(201);
 			});
 			it('should return a `Location` header with a link to the newly-created resource',function(){
 				expect(response.headers).to.have.key('location');
-				expect(response.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/scene\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
+				expect(response.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/scene-requests\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
 			});
 		});
 	});
