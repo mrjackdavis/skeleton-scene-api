@@ -206,7 +206,8 @@ describe('API endpoint',function(){
 
 	describe('/v0-2/scenes/',function(){
 		describe('POST',function(){
-			var sceneID;
+
+			var response;
 
 			before(function(done){
 				request(app)
@@ -218,26 +219,34 @@ describe('API endpoint',function(){
 					})
 					.then(function(res){
 						var splitURL = res.headers.location.split('/');
-						console.log(splitURL);
-						sceneID = {
-							sceneID:splitURL[(splitURL.length - 2)],
-							createdAt:splitURL[(splitURL.length - 1)]
-						};
-						done();
-					})
-					.catch(done);
-			});
 
-			it('should return 201 and header location of resource',function(done){
-				request(app)
-					.post('/v0-2/scenes')
-					.send({
-						request:sceneID,
+						return request(app)
+							.post('/v0-2/scenes')
+							.send({
+								request:{
+									sceneID:splitURL[(splitURL.length - 2)],
+									createdAt:splitURL[(splitURL.length - 1)]
+								},
+								result:{
+									URI:'http://awesomeresult.com/lala',
+									type:'IMAGE'
+								}
+							});
 					})
 					.then(function(res){
-						expect(res.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/v0-2\/scenes\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
-						expect(res.status).to.be(201);
+						response = res;
+						done();
 					}).catch(done);
+			});
+
+			it('should return 201 and header location of resource',function(){
+				expect(response.status).to.be(201);
+				expect(response.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/v0-2\/scenes\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
+			});
+
+			it('should return 201 and header location of resource',function(){
+				expect(response.status).to.be(201);
+				expect(response.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/v0-2\/scenes\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
 			});
 		});
 
