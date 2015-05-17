@@ -128,40 +128,121 @@ describe('API endpoint',function(){
 			expect(response.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/v0-2\/scene-requests\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
 		});
 	});
-	describe('/v0-2/scene-requests/:sceneID/:createdAt GET',function(){
-		var response;
 
-		before(function(done){
-			request(app)
-				.post('/v0-2/scene-requests')
-				.send({
-					resourceType:'URL',
-					resourceURI:'http://www.one.com',
-					generatorName:'Bob Marley'
-				})
-				.then(function(res){
-					var url = res.headers.location.replace('http://127.0.0.1','');
-					return request(app).get(url);
-				})
-				.then(function(res){
-					response = res;
-					done();
-				})
-				.catch(done);
+	describe('/v0-2/scene-requests/:sceneID/:createdAt',function(){
+		describe('GET',function(){
+			var response;
+
+			before(function(done){
+				request(app)
+					.post('/v0-2/scene-requests')
+					.send({
+						resourceType:'URL',
+						resourceURI:'http://www.one.com',
+						generatorName:'Bob Marley'
+					})
+					.then(function(res){
+						var url = res.headers.location.replace('http://127.0.0.1','');
+						return request(app).get(url);
+					})
+					.then(function(res){
+						response = res;
+						done();
+					})
+					.catch(done);
+			});
+
+			it('should respond with code 200 upon success',function(){
+				expect(response.statusCode).to.be(200);
+			});
+			it('should return payload of scenes',function(){
+				expect(response.body).to.be.ok();
+				expect(response.body).to.only.have.keys(
+					['sceneID',
+					'createdAt',
+					'generatorName',
+					'resourceURI',
+					'resourceType',
+					'status']);
+			});
 		});
 
-		it('should respond with code 200 upon success',function(){
-			expect(response.statusCode).to.be(200);
+		describe('PUT',function(){
+			var sceneRequestURL;
+
+			before(function(done){
+				request(app)
+					.post('/v0-2/scene-requests')
+					.send({
+						resourceType:'URL',
+						resourceURI:'http://www.one.com',
+						generatorName:'Bob Marley'
+					})
+					.then(function(res){
+						sceneRequestURL = res.headers.location.replace('http://127.0.0.1','');
+						done();
+					})
+					.catch(done);
+			});
+
+			it('should update the status of the request',function(done){
+				request(app)
+					.put(sceneRequestURL)
+					.send({
+						status:'IN_PROGRESS'
+					})
+					.then(function(res){
+						expect(res.statusCode).to.be(200);
+						return request(app).get(sceneRequestURL);
+					})
+					.then(function(res){
+						//assert
+						expect(res.body.status).to.be('IN_PROGRESS');
+						done();
+					}).catch(done);
+			});
 		});
-		it('should return payload of scenes',function(){
-			expect(response.body).to.be.ok();
-			expect(response.body).to.only.have.keys(
-				['sceneID',
-				'createdAt',
-				'generatorName',
-				'resourceURI',
-				'resourceType',
-				'status']);
+	});
+
+	describe('/v0-2/scenes/',function(){
+		describe('POST',function(){
+			var sceneID;
+
+			before(function(done){
+				request(app)
+					.post('/v0-2/scene-requests')
+					.send({
+						resourceType:'URL',
+						resourceURI:'http://www.hipstertown.com',
+						generatorName:'Bob Marley'
+					})
+					.then(function(res){
+						var splitURL = res.headers.location.split('/');
+						console.log(splitURL);
+						sceneID = {
+							sceneID:splitURL[(splitURL.length - 2)],
+							createdAt:splitURL[(splitURL.length - 1)]
+						};
+						done();
+					})
+					.catch(done);
+			});
+
+			it('should return 201 and header location of resource',function(done){
+				request(app)
+					.post('/v0-2/scenes')
+					.send({
+						request:sceneID,
+					})
+					.then(function(res){
+						expect(res.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/v0-2\/scenes\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
+						expect(res.status).to.be(201);
+					}).catch(done);
+			});
+		});
+
+		describe('GET',function(){
+
 		});
 	});
 
