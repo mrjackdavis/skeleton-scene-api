@@ -31,16 +31,22 @@ describe('SceneStore',function(){
 			var tmpDir = './tmp/mockDynamo-scene-store-tests';
 			mockDynamo = new MockDynamo(tmpDir);
 			return mockDynamo.Start(DYNAMO_PORT);
-		})
-		.then(function(){
-			var store = new SceneStore(storeConfig);
-			return store.SetupDb();
 		}).then(done).catch(done);
 	});
 
 
 	after(function(done){
 		mockDynamo.Stop().then(done).catch(done);
+	});
+
+	beforeEach(function(done){
+		var store = new SceneStore(storeConfig);
+		store.SetupDb().then(done).catch(done);
+	});
+
+	afterEach(function(done){
+		var store = new SceneStore(storeConfig);
+		store.TeardownDb().then(done).catch(done);
 	});
 
 	describe('Scene Requests',function(){
@@ -117,7 +123,7 @@ describe('SceneStore',function(){
 		};
 		var completedScene;
 
-		before(function(done){
+		beforeEach(function(done){
 			var store = new SceneStore(storeConfig);
 			store.NewRequest(params)
 				.then(function(scene){
@@ -164,6 +170,44 @@ describe('SceneStore',function(){
 		}
 	});
 
+	describe('GetScenes',function(done){
+		var params = {
+			resourceType:'URL',
+			resourceURI:'http://la.com',
+			generatorName:'Snowflake',
+			tags:['testing']
+		};
+
+		var completionStatus = 'SUCCESSFUL';
+		var result = {
+			type:'IMAGE',
+			URI:'http://la.com'
+		};
+		it('should return multiple scenes',function(done){
+			var store = new SceneStore(storeConfig);
+
+			var promises = [];
+			var i = 0;
+
+			var fnCompleteScene = function(scene){
+				return store.CompleteSceneRequest(scene,completionStatus,result);
+			};
+
+			while (i<10){
+				promises.push(store.NewRequest(params)
+					.then(fnCompleteScene));
+				i++;
+			}
+			Promise.all(promises)
+				.then(function(){
+					return store.GetScenes();
+				}).then(function(scenes){
+					expect(scenes.length).to.be(10);
+					done();
+				}).catch(done);
+		});
+	});
+
 	describe('GetRange',function(done){
 		it('should return scenes 25 by default',function(done){
 			this.timeout(6000);
@@ -176,7 +220,6 @@ describe('SceneStore',function(){
 
 					var i = scenes.length;
 					var promises = [];
-
 
 					while(i <= 35){
 						latestDate = new Date(Date.now()+i*360);
