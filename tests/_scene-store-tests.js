@@ -49,7 +49,7 @@ describe('SceneStore',function(){
 		store.TeardownDb().then(done).catch(done);
 	});
 
-	describe('Scene Requests',function(){
+	describe('.NewRequest() & .GetRequest()',function(){
 		it('should create and retrieve new requests respectively',function(done){
 			this.timeout(10000);
 			var store = new SceneStore(storeConfig);
@@ -203,6 +203,35 @@ describe('SceneStore',function(){
 					return store.GetScenes();
 				}).then(function(scenes){
 					expect(scenes.length).to.be(10);
+					done();
+				}).catch(done);
+		});
+	});
+
+	describe('GetRequests',function(done){
+		var params = {
+			resourceType:'URL',
+			resourceURI:'http://la.com',
+			generatorName:'Snowflake',
+			tags:['testing']
+		};
+
+		it('should return multiple scenes',function(done){
+			var store = new SceneStore(storeConfig);
+
+			var promises = [];
+			var i = 0;
+
+			while (i<10){
+				promises.push(store.NewRequest(params));
+				i++;
+			}
+
+			Promise.all(promises)
+				.then(function(){
+					return store.GetRequests();
+				}).then(function(requests){
+					expect(requests.length).to.be(10);
 					done();
 				}).catch(done);
 		});
