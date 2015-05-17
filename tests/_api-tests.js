@@ -102,13 +102,13 @@ describe('API endpoint',function(){
 		});
 	});
 	
-	describe('/scene-requests/',function(){
+	describe('/v0-2/scene-requests/',function(){
 		describe('POST',function(){
 			var response;
 
 			before(function(done){
 				request(app)
-					.post('/scene-requests')
+					.post('/v0-2/scene-requests')
 					.send({
 						resourceType:'URL',
 						resourceURI:'http://www.youtube.com',
@@ -126,7 +126,7 @@ describe('API endpoint',function(){
 			});
 			it('should return a `Location` header with a link to the newly-created resource',function(){
 				expect(response.headers).to.have.key('location');
-				expect(response.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/scene-requests\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
+				expect(response.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/v0-2\/scene-requests\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
 			});
 		});
 	});
