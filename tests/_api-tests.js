@@ -102,30 +102,62 @@ describe('API endpoint',function(){
 		});
 	});
 	
-	describe('/v0-2/scene-requests/ POST',function(){
-		var response;
+	describe('/v0-2/scene-requests/',function(){
+		describe('POST',function(){
+			var response;
 
-		before(function(done){
-			request(app)
-				.post('/v0-2/scene-requests')
-				.send({
-					resourceType:'URL',
-					resourceURI:'http://www.youtube.com',
-					generatorName:'Bob Marley'
-				})
-				.then(function(res){
-					response = res;
-					done();
-				})
-				.catch(done);
+			before(function(done){
+				request(app)
+					.post('/v0-2/scene-requests')
+					.send({
+						resourceType:'URL',
+						resourceURI:'http://www.youtube.com',
+						generatorName:'Bob Marley'
+					})
+					.then(function(res){
+						response = res;
+						done();
+					})
+					.catch(done);
+			});
+
+			it('should respond with code 201 upon success',function(){
+				expect(response.statusCode).to.be(201);
+			});
+			it('should return a `Location` header with a link to the newly-created resource',function(){
+				expect(response.headers).to.have.key('location');
+				expect(response.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/v0-2\/scene-requests\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
+			});
 		});
 
-		it('should respond with code 201 upon success',function(){
-			expect(response.statusCode).to.be(201);
-		});
-		it('should return a `Location` header with a link to the newly-created resource',function(){
-			expect(response.headers).to.have.key('location');
-			expect(response.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/v0-2\/scene-requests\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
+		describe('GET',function(){
+			var response;
+
+			before(function(done){
+				request(app)
+					.post('/v0-2/scene-requests')
+					.send({
+						resourceType:'URL',
+						resourceURI:'http://www.youtube.com',
+						generatorName:'Bob Marley'
+					})
+					.then(function(){
+						return request(app).get('/v0-2/scene-requests');
+					})
+					.then(function(res){
+						response = res;
+						done();
+					})
+					.catch(done);
+			});
+
+			it('should respond with code 200 upon success',function(){
+				expect(response.statusCode).to.be(200);
+			});
+			it('should contain an array of scene requests',function(){
+				expect(response.body).to.be.an(Array);
+				expect(response.body.length).to.be.greaterThan(0);
+			});
 		});
 	});
 
