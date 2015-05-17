@@ -155,7 +155,7 @@ describe('API endpoint',function(){
 			it('should respond with code 200 upon success',function(){
 				expect(response.statusCode).to.be(200);
 			});
-			it('should return payload of scenes',function(){
+			it('should return payload of single scene',function(){
 				expect(response.body).to.be.ok();
 				expect(response.body).to.only.have.keys(
 					['sceneID',
@@ -243,15 +243,59 @@ describe('API endpoint',function(){
 				expect(response.status).to.be(201);
 				expect(response.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/v0-2\/scenes\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
 			});
-
-			it('should return 201 and header location of resource',function(){
-				expect(response.status).to.be(201);
-				expect(response.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/v0-2\/scenes\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
-			});
 		});
 
 		describe('GET',function(){
 
+			var response;
+
+			before(function(done){
+				request(app)
+					.post('/v0-2/scene-requests')
+					.send({
+						resourceType:'URL',
+						resourceURI:'http://www.hipstertown.com',
+						generatorName:'Bob Marley'
+					})
+					.then(function(res){
+						var splitURL = res.headers.location.split('/');
+
+						return request(app)
+							.post('/v0-2/scenes')
+							.send({
+								request:{
+									sceneID:splitURL[(splitURL.length - 2)],
+									createdAt:splitURL[(splitURL.length - 1)]
+								},
+								result:{
+									URI:'http://awesomeresult.com/lala',
+									type:'IMAGE'
+								}
+							});
+					})
+					.then(function(res){
+						return request(app).get('/v0-2/scenes/');
+					}).then(function(res){
+						response = res;
+						done();
+					}).catch(done);
+			});
+
+			it('should return payload of scenes',function(){
+				expect(response.body).to.be.ok();
+				expect(response.body).to.be.an(Array);
+				expect(response.status).to.be(200);
+
+				expect(response.body[0]).to.only.have.keys(
+					['sceneID',
+					'completedAt',
+					'requestedAt',
+					'generatorName',
+					'resourceURI',
+					'resourceType',
+					'resultURI',
+					'resultType']);
+			});
 		});
 	});
 
