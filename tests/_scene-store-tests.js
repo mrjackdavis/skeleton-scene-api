@@ -40,18 +40,19 @@ describe('SceneStore',function(){
 	});
 
 	beforeEach(function(done){
+		this.timeout(3000);
 		var store = new SceneStore(storeConfig);
 		store.SetupDb().then(done).catch(done);
 	});
 
 	afterEach(function(done){
+		this.timeout(3000);
 		var store = new SceneStore(storeConfig);
 		store.TeardownDb().then(done).catch(done);
 	});
 
 	describe('.NewRequest() & .GetRequest()',function(){
 		it('should create and retrieve new requests respectively',function(done){
-			this.timeout(10000);
 			var store = new SceneStore(storeConfig);
 
 			var params = {

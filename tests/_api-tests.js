@@ -1,4 +1,4 @@
-var NotImpementedError = require('../lib/NotImplementedError');
+var NotImplementedError = require('../lib/NotImplementedError');
 var request = require('supertest-as-promised');
 var expect = require('expect.js');
 var AppFactory = require('../lib/AppFactory');
@@ -328,6 +328,58 @@ describe('API endpoint',function(){
 					'resultURI',
 					'resultType']);
 			});
+		});
+	});
+
+	describe('/v0-2/scenes/:hash/:timestamp GET',function(){
+		var response;
+
+		before(function(done){
+			request(app)
+				.post('/v0-2/scene-requests')
+				.send({
+					resourceType:'URL',
+					resourceURI:'http://www.hipstertown.com',
+					generatorName:'Bob Marley'
+				})
+				.then(function(res){
+					var splitURL = res.headers.location.split('/');
+
+					return request(app)
+						.post('/v0-2/scenes')
+						.send({
+							request:{
+								sceneID:splitURL[(splitURL.length - 2)],
+								createdAt:splitURL[(splitURL.length - 1)]
+							},
+							result:{
+								URI:'http://awesomeresult.com/lala',
+								type:'IMAGE'
+							}
+						});
+				})
+				.then(function(res){
+					response = res;
+					done();
+				}).catch(done);
+		});
+
+		it('should return a single scene',function(done){
+			request(app)
+				.get(response.headers.location.replace('http://127.0.0.1',''))
+				.then(function(res){
+					expect(res.body).to.be.ok();
+					expect(res.body).to.only.have.keys(
+						['sceneID',
+						'completedAt',
+						'requestedAt',
+						'generatorName',
+						'resourceURI',
+						'resourceType',
+						'resultURI',
+						'resultType']);
+					done();
+				}).catch(done);
 		});
 	});
 
