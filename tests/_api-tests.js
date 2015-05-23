@@ -253,13 +253,12 @@ describe('API endpoint',function(){
 					}).then(function(res){
 						expect(res.body).to.have.key('thumbnailURI');
 						expect(res.body.thumbnailURI).to.be('http://thumbnail.org/mynailonathumb');
+						done();
 					}).catch(done);
 			});
 		});
 
 		describe('GET',function(){
-
-			var response;
 
 			before(function(done){
 				request(app)
@@ -285,28 +284,32 @@ describe('API endpoint',function(){
 								}
 							});
 					})
-					.then(function(res){
-						return request(app).get('/v0-2/scenes/');
-					}).then(function(res){
-						response = res;
+					.then(function(){
 						done();
 					}).catch(done);
 			});
 
-			it('should return payload of scenes',function(){
-				expect(response.body).to.be.ok();
-				expect(response.body).to.be.an(Array);
-				expect(response.status).to.be(200);
-
-				expect(response.body[0]).to.only.have.keys(
-					['sceneID',
-					'completedAt',
-					'requestedAt',
-					'generatorName',
-					'resourceURI',
-					'resourceType',
-					'resultURI',
-					'resultType']);
+			it('should return payload of scenes',function(done){
+				request(app)
+					.get('/v0-2/scenes/')
+					.then(function(res){
+						expect(res.status).to.be(200);
+						expect(res.body).to.be.ok();
+						expect(res.body).to.be.an(Array);
+						res.body.forEach(function(item){
+							expect(item).to.only.have.keys(
+								['sceneID',
+								'completedAt',
+								'requestedAt',
+								'generatorName',
+								'resourceURI',
+								'resourceType',
+								'resultURI',
+								'resultType',
+								'thumbnailURI']);
+						});
+						done();
+					}).catch(done);
 			});
 		});
 	});
@@ -357,7 +360,18 @@ describe('API endpoint',function(){
 						'resourceURI',
 						'resourceType',
 						'resultURI',
-						'resultType']);
+						'resultType',
+						'thumbnailURI']);
+					done();
+				}).catch(done);
+		});
+
+		it('should return empty string for thumbnailURI if none exists',function(done){
+			request(app)
+				.get(response.headers.location.replace('http://127.0.0.1',''))
+				.then(function(res){
+					expect(res.body).to.have.key('thumbnailURI');
+					expect(res.body.thumbnailURI).to.be('');
 					done();
 				}).catch(done);
 		});
