@@ -196,9 +196,9 @@ describe('API endpoint',function(){
 	describe('/v0-2/scenes/',function(){
 		describe('POST',function(){
 
-			var response;
+			var sceneRequestID;
 
-			before(function(done){
+			beforeEach(function(done){
 				request(app)
 					.post('/v0-2/scene-requests')
 					.send({
@@ -209,18 +209,10 @@ describe('API endpoint',function(){
 					.then(function(res){
 						var splitURL = res.headers.location.split('/');
 
-						return request(app)
-							.post('/v0-2/scenes')
-							.send({
-								request:{
-									sceneID:splitURL[(splitURL.length - 2)],
-									createdAt:splitURL[(splitURL.length - 1)]
-								},
-								result:{
-									URI:'http://awesomeresult.com/lala',
-									type:'IMAGE'
-								}
-							});
+						sceneRequestID = {
+							sceneID:splitURL[(splitURL.length - 2)],
+							createdAt:splitURL[(splitURL.length - 1)]
+						};
 					})
 					.then(function(res){
 						response = res;
@@ -228,9 +220,40 @@ describe('API endpoint',function(){
 					}).catch(done);
 			});
 
-			it('should return 201 and header location of resource',function(){
-				expect(response.status).to.be(201);
-				expect(response.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/v0-2\/scenes\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
+			it('should return 201 and header location of resource',function(done){
+				request(app)
+					.post('/v0-2/scenes')
+					.send({
+						request:sceneRequestID,
+						result:{
+							URI:'http://awesomeresult.com/lala',
+							type:'IMAGE'
+						}
+					}).then(function(res){
+						expect(res.status).to.be(201);
+						expect(res.headers.location).to.match(/^(:?http:\/\/127.0.0.1\/v0-2\/scenes\/)[\w\d]{8}-[\w\d]{4}-[\w\d]{4}-[\w\d]{4}-[\w\d]{12}\/\d{13}$/);
+						done();
+					}).catch(done);
+			});
+
+			it('should accept thumbnails',function(done){
+				request(app)
+					.post('/v0-2/scenes')
+					.send({
+						request:sceneRequestID,
+						result:{
+							URI:'http://awesomeresult.com/lala',
+							type:'IMAGE',
+							thumbnailURI:'http://thumbnail.org/mynailonathumb'
+						}
+					}).then(function(res){
+						expect(res.status).to.be(201);
+						return request(app)
+							.get(res.headers.location.replace('http://127.0.0.1',''));
+					}).then(function(res){
+						expect(res.body).to.have.key('thumbnailURI');
+						expect(res.body.thumbnailURI).to.be('http://thumbnail.org/mynailonathumb');
+					}).catch(done);
 			});
 		});
 
