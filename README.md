@@ -1,4 +1,4 @@
-# Skeleton Scene API
+# Skeleton Scene API [![Code Climate](https://codeclimate.com/github/mrjackdavis/skeleton-scene-api/badges/gpa.svg)](https://codeclimate.com/github/mrjackdavis/skeleton-scene-api)
 
 HTTP API for skeleton scene
 
@@ -34,3 +34,11 @@ And run like so
 You'll need to include
 
     -e AWS_ACCESSKEYID="key" -e AWS_SECRETACCESSKEY="secret"
+
+## Deployment
+
+Firstly, you need to push the docker repository
+
+    docker push mrjackdavis/skeleton-scene-api
+
+Right now, we're using AWS Elastic Container Service, it should automagically pull the update. If not, you can go in manually and `docker pull mrjackdavis/skeleton-scene-api`.

@@ -1,15 +1,20 @@
-var NotImpementedError = require('../lib/NotImplementedError');
+var NotImplementedError = require('../lib/NotImplementedError');
 var expect = require('expect.js');
+var Promise = require('Promise');
+
 var SceneStore = require('../lib/stores/SceneStore');
 var appConfigGetter = require('../lib/AppConfig');
+var sceneEnums = require('../lib/stores/SceneEnums');
+var statusTypes = sceneEnums.StatusTypes;
+var resourceTypes = sceneEnums.ResourceTypes;
+
 var MockDynamo = require('./MockDynamo');
-var Promise = require('Promise');
 
 var DYNAMO_PORT = 4567;
 
 describe('SceneStore',function(){
 	var storeConfig;
-	var mockDynamo = new MockDynamo('./tmp/mockDynamo-scene-store-tests');
+	var mockDynamo;
 
 	before(function(done){
 		appConfigGetter().then(function(config){
@@ -23,40 +28,50 @@ describe('SceneStore',function(){
 				endpoint:'http://127.0.0.1:'+DYNAMO_PORT
 			};
 		}).then(function(){
+			var tmpDir = './tmp/mockDynamo-scene-store-tests';
+			mockDynamo = new MockDynamo(tmpDir);
 			return mockDynamo.Start(DYNAMO_PORT);
-		}).then(function(){
-			var store = new SceneStore(storeConfig);
-			return store.SetupDb();
-		}).then(function(){
-			done();
-		}).catch(done);
+		}).then(done).catch(done);
 	});
+
 
 	after(function(done){
-		mockDynamo.Stop().then(done);
+		mockDynamo.Stop().then(done).catch(done);
 	});
 
-	describe('Add and get',function(){
-		it('should create and retrieve a new item respectively',function(done){
-			this.timeout(10000);
+	beforeEach(function(done){
+		this.timeout(3000);
+		var store = new SceneStore(storeConfig);
+		store.SetupDb().then(done).catch(done);
+	});
+
+	afterEach(function(done){
+		this.timeout(3000);
+		var store = new SceneStore(storeConfig);
+		store.TeardownDb().then(done).catch(done);
+	});
+
+	describe('.NewRequest() & .GetRequest()',function(){
+		it('should create and retrieve new requests respectively',function(done){
 			var store = new SceneStore(storeConfig);
 
-			var scene = {
-				resource:{'type':'url','location':'http://la.com'},
-				processes:[],
-				tags:['testing'],
-				dateCreated:new Date()
+			var params = {
+				resourceType:'URL',
+				resourceURI:'http://la.com',
+				generatorName:'Snowflake',
+				tags:['testing']
 			};
 
-			store.Add(scene)
+			store.NewRequest(params)
 				.then(function(scene){
 					expect(scene).to.be.ok();
 					expect(scene.sceneID).to.be.a('string');
-					expect(scene.dateCreated).to.be.a(Date);
-					expect(scene.resource).to.be.an(Object);
-					expect(scene.processes).to.be.an(Array);
+					expect(scene.createdAt).to.be.a('number');
+					expect(scene.resourceType).to.be(resourceTypes.Url);
+					expect(scene.resourceURI).to.be('http://la.com');
+					expect(scene.status).to.be(statusTypes.Pending);
 					expect(scene.tags).to.be.an(Array);
-					expect(scene.resource.location).to.be('http://la.com');
+					expect(scene.tags).to.contain('testing');
 
 					return scene;
 				}).then(function(scene){
@@ -64,127 +79,163 @@ describe('SceneStore',function(){
 					store = new SceneStore(storeConfig);
 
 					return store
-						.Get({sceneID:scene.sceneID, dateCreated:scene.dateCreated})
+						.GetRequest({sceneID:scene.sceneID, createdAt:scene.createdAt})
 						.then(function(scene2){
-							expect(scene2).to.be.ok();
-							expect(scene2.sceneID).to.be(scene.sceneID);
-							expect(scene2.dateCreated).to.eql(scene.dateCreated);
-							expect(scene2.resource).to.be.an(Object);
-							expect(scene2.tags).to.contain('testing');
-							expect(scene2.processes).to.be.an(Array);
-							expect(scene2.resource.location).to.be(scene.resource.location);
+							// expect(scene2).to.be.ok();
+							expect(scene2).to.eql(scene);
 						});
 				}).then(function(){
 					done();
 				}).catch(done);
 		});
 	});
-	describe('GetRange',function(done){
-		it('should return most recent scenes 100 by default',function(done){
-			this.timeout(6000);
+
+	describe('SetSceneRequestStatus',function(){
+		it('should update the status of a request',function(done){
+			var store = new SceneStore(storeConfig);
+			var params = {
+				resourceType:'URL',
+				resourceURI:'http://la.com',
+				generatorName:'Snowflake',
+				tags:['testing']
+			};
+
+			store.NewRequest(params)
+				.then(function(scene){
+					return store.SetSceneRequestStatus(scene,'IN_PROGRESS');
+				}).then(function(scene){
+					expect(scene.status).to.be('IN_PROGRESS');
+				}).then(done).catch(done);
+		});
+	});
+
+	describe('CompleteSceneRequest',function(){
+		var params = {
+			resourceType:'URL',
+			resourceURI:'http://la.com',
+			generatorName:'Snowflake',
+			tags:['testing']
+		};
+
+		var completionStatus = 'SUCCESSFUL';
+		var result = {
+			type:'IMAGE',
+			URI:'http://la.com'
+		};
+		var completedScene;
+
+		beforeEach(function(done){
+			var store = new SceneStore(storeConfig);
+			store.NewRequest(params)
+				.then(function(scene){
+					return store.CompleteSceneRequest(scene,completionStatus,result);
+				}).then(function(scene){
+					completedScene = scene;
+					done();
+				}).catch(done);
+		});
+
+		it('should return new scene',function(){
+			verifyScene(completedScene);
+		});
+
+		it('should create new scene if it was completed successfully',function(done){
+			var store = new SceneStore(storeConfig);
+			store.GetScene(completedScene)
+				.then(function(scene){
+					verifyScene(scene);
+				}).then(done).catch(done);
+		});
+
+		it('should delete requested scene',function(done){
+			var store = new SceneStore(storeConfig);
+			store.GetRequest({
+				sceneID:completedScene.sceneID,
+				createdAt:completedScene.requestedAt
+			})
+				.then(function(scene){
+					expect(scene).to.be(null);
+				}).then(done).catch(done);
+		});
+
+		function verifyScene(scene){
+			expect(scene).to.be.ok();
+			expect(scene.completedAt).to.be.a('number');
+			expect(scene.generatorName).to.be(params.generatorName);
+			expect(scene.resourceType).to.be(params.resourceType);
+			expect(scene.resourceURI).to.be(params.resourceURI);
+			expect(scene.tags).to.eql(params.tags);
+
+			expect(scene.resultType).to.eql(result.type);
+			expect(scene.resultURI).to.eql(result.URI);
+		}
+	});
+
+	describe('GetScenes',function(done){
+		var params = {
+			resourceType:'URL',
+			resourceURI:'http://la.com',
+			generatorName:'Snowflake',
+			tags:['testing']
+		};
+
+		var completionStatus = 'SUCCESSFUL';
+		var result = {
+			type:'IMAGE',
+			URI:'http://la.com'
+		};
+		it('should return multiple scenes',function(done){
 			var store = new SceneStore(storeConfig);
 
-			// Add over 100 items
-			store.GetRange().then(function(scenes){
-					expect(scenes).to.be.an(Array);
+			var promises = [];
+			var i = 0;
 
-					var i = scenes.length;
-					var promises = [];
+			var fnCompleteScene = function(scene){
+				return store.CompleteSceneRequest(scene,completionStatus,result);
+			};
 
-					while(i-1 < 110){
-						var scene = {
-							resource:{'type':'url','location':'http://'+i+'.lala'},
-							processes:[],
-							tags:['testing'],
-							dateCreated:new Date()
-						};
-
-						promises.push(store.Add(scene));
-
-						i++;
-					}
-
-					return Promise.all(promises);
-				})
-				.then(store.GetRange())
-				.then(function(scenes){
-					if(scenes.length === 110){
-						console.warn('Test inconclusive; library is probably broken');
-					}else{
-						expect(scenes.length).to.be(100);
-					}
+			while (i<10){
+				promises.push(store.NewRequest(params)
+					.then(fnCompleteScene));
+				i++;
+			}
+			Promise.all(promises)
+				.then(function(){
+					return store.GetScenes();
+				}).then(function(scenes){
+					expect(scenes.length).to.be(10);
 					done();
 				}).catch(done);
 		});
 	});
 
-	describe('AddProcessToScene',function(done){
+	describe('GetRequests',function(done){
+		var params = {
+			resourceType:'URL',
+			resourceURI:'http://la.com',
+			generatorName:'Snowflake',
+			tags:['testing']
+		};
 
-		var store;
-
-		it('should return the scene that\'s been updated with the new process',function(done){
-			this.timeout(5000);
+		it('should return multiple scenes',function(done){
 			var store = new SceneStore(storeConfig);
-			var scene = {
-				resource:{'type':'url','location':'http://AddProcessToScene.com'},
-				tags:['testing']
-			};
 
+			var promises = [];
+			var i = 0;
 
-			store.Add(scene)
-				.then(function(scene){
-					return store.AddProcessToScene(scene,{ status:'IN_PROGRESS' });
-				}).then(function(scene){
-					expect(scene.processes).to.be.an(Array);
-					expect(scene.processes.length).to.be(1);
-					expect(scene.processes[0].status).to.be('IN_PROGRESS');
-					done();
-				}).catch(done);
-		});
+			while (i<10){
+				promises.push(store.NewRequest(params));
+				i++;
+			}
 
-		it('should support multiple processes',function(done){
-			this.timeout(5000);
-			var store = new SceneStore(storeConfig);
-			var scene = {
-				resource:{'type':'url','location':'http://AddProcessToScene2.com'},
-				tags:['testing']
-			};
-
-			store.Add(scene)
-				.then(function(scene){
-					return store.AddProcessToScene(scene,{ status:'IN_PROGRESS' });
-				}).then(function(scene){
-					return store.AddProcessToScene(scene,{ status:'COMPLETE' });
-				}).then(function(scene){
-					expect(scene.processes).to.be.an(Array);
-					expect(scene.processes.length).to.be(2);
+			Promise.all(promises)
+				.then(function(){
+					return store.GetRequests();
+				}).then(function(requests){
+					expect(requests.length).to.be(10);
 					done();
 				}).catch(done);
 		});
 	});
-	describe('UpdateProcess',function(){
-		it('should update the process at a specific index',function(done){
-			this.timeout(5000);
-			var store = new SceneStore(storeConfig);
-			var scene = {
-				resource:{'type':'url','location':'http://UpdateProcess.com'},
-				tags:['testing']
-			};
-
-			store.Add(scene)
-				.then(function(scene){
-					return store.AddProcessToScene(scene,{ status:'IN_PROGRESS' });
-				}).then(function(scene){
-					return store.AddProcessToScene(scene,{ status:'PAUSED' });
-				}).then(function(scene){
-					return store.UpdateProcess(scene,1,{status:'COMPLETE'});
-				}).then(function(scene){
-					expect(scene.processes[0].status).to.be('IN_PROGRESS');
-					expect(scene.processes[1].status).to.be('COMPLETE');
-					done();
-				}).catch(done);
-		});
-	});
-
 });
 
