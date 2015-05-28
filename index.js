@@ -7,9 +7,7 @@ console.log('Preparing app');
 
 appConfigGetter()
 	.then(function(config){
-		return appFactory.NewApp({
-			AWS_CREDENTIALS:config.AWS_CREDENTIALS
-		});
+		return appFactory.NewApp(config);
 	}).then(function(app){
 		console.log('App started, listening on port 8080');
 		app.listen(8080);

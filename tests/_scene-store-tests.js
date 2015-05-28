@@ -15,10 +15,12 @@ var DYNAMO_PORT = 4567;
 describe('SceneStore',function(){
 	var storeConfig;
 	var mockDynamo;
+	var store;
 
 	before(function(done){
 		appConfigGetter().then(function(config){
 			storeConfig = {
+				MYSQL_CONNECTION_URL:config.MYSQL_CONNECTION_URL,	
 				AWS_CREDENTIALS:{
 					// accessKeyId:config.TEST_AWS_CREDENTIALS.accessKeyId,
 					// secretAccessKey:config.TEST_AWS_CREDENTIALS.secretAccessKey
@@ -31,7 +33,10 @@ describe('SceneStore',function(){
 			var tmpDir = './tmp/mockDynamo-scene-store-tests';
 			mockDynamo = new MockDynamo(tmpDir);
 			return mockDynamo.Start(DYNAMO_PORT);
-		}).then(done).catch(done);
+		}).then(function(){
+			store = new SceneStore(storeConfig);
+			done();
+		}).catch(done);
 	});
 
 
@@ -41,19 +46,16 @@ describe('SceneStore',function(){
 
 	beforeEach(function(done){
 		this.timeout(3000);
-		var store = new SceneStore(storeConfig);
 		store.SetupDb().then(done).catch(done);
 	});
 
 	afterEach(function(done){
 		this.timeout(3000);
-		var store = new SceneStore(storeConfig);
 		store.TeardownDb().then(done).catch(done);
 	});
 
 	describe('.NewRequest() & .GetRequest()',function(){
 		it('should create and retrieve new requests respectively',function(done){
-			var store = new SceneStore(storeConfig);
 
 			var params = {
 				resourceType:'URL',
@@ -92,7 +94,6 @@ describe('SceneStore',function(){
 
 	describe('SetSceneRequestStatus',function(){
 		it('should update the status of a request',function(done){
-			var store = new SceneStore(storeConfig);
 			var params = {
 				resourceType:'URL',
 				resourceURI:'http://la.com',
@@ -125,7 +126,6 @@ describe('SceneStore',function(){
 		var completedScene;
 
 		beforeEach(function(done){
-			var store = new SceneStore(storeConfig);
 			store.NewRequest(params)
 				.then(function(scene){
 					return store.CompleteSceneRequest(scene,completionStatus,result);
@@ -140,7 +140,6 @@ describe('SceneStore',function(){
 		});
 
 		it('should create new scene if it was completed successfully',function(done){
-			var store = new SceneStore(storeConfig);
 			store.GetScene(completedScene)
 				.then(function(scene){
 					verifyScene(scene);
@@ -148,7 +147,6 @@ describe('SceneStore',function(){
 		});
 
 		it('should delete requested scene',function(done){
-			var store = new SceneStore(storeConfig);
 			store.GetRequest({
 				sceneID:completedScene.sceneID,
 				createdAt:completedScene.requestedAt
@@ -185,7 +183,6 @@ describe('SceneStore',function(){
 			URI:'http://la.com'
 		};
 		it('should return multiple scenes',function(done){
-			var store = new SceneStore(storeConfig);
 
 			var promises = [];
 			var i = 0;
@@ -218,7 +215,6 @@ describe('SceneStore',function(){
 		};
 
 		it('should return multiple scenes',function(done){
-			var store = new SceneStore(storeConfig);
 
 			var promises = [];
 			var i = 0;

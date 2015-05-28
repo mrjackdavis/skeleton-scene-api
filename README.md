@@ -15,7 +15,11 @@ First things first, once you've cloned the repository do
 
     npm install
 
-Then you'll need to setup your secrets, duplicate `./secrets_example.json` to `./secrets.json` and add your keys and secrets as required.
+Then you need to set your environment variables
+
+    export AWS_ACCESSKEYID="secret"
+    export AWS_SECRETACCESSKEY="secret"
+    export MYSQL_CONNECTION_URL="mysql://username:password@host:port/database"
 
 Then check out what gulp tasks are available to you
 

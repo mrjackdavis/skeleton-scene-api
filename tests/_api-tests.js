@@ -26,6 +26,7 @@ describe('API endpoint',function(){
 						accessKeyId:'hocus',
 						secretAccessKey:'pocus'
 					},
+					MYSQL_CONNECTION_URL:config.MYSQL_CONNECTION_URL,
 					endpoint:'http://127.0.0.1:'+DYNAMO_PORT
 				});
 			}).then(function(newApp){
