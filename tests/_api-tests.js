@@ -306,7 +306,8 @@ describe('API endpoint',function(){
 								'resourceType',
 								'resultURI',
 								'resultType',
-								'thumbnailURI']);
+								'thumbnailURI',
+								'tags']);
 						});
 						done();
 					}).catch(done);
@@ -361,7 +362,8 @@ describe('API endpoint',function(){
 						'resourceType',
 						'resultURI',
 						'resultType',
-						'thumbnailURI']);
+						'thumbnailURI',
+						'tags']);
 					done();
 				}).catch(done);
 		});
