@@ -31,13 +31,11 @@ Build image with this command
 
     docker build -t mrjackdavis/skeleton-scene-api .
 
-And run like so
+And run like so, please note both container linking to a `mysql` docker container and the AWS credentials.
 
-    docker run --name skl-api -p 8080:8080 -d mrjackdavis/skeleton-scene-api
+    docker run --name skl-api -p 8080:8080 --link amysqldb:mysql -e AWS_ACCESSKEYID="key" -e AWS_SECRETACCESSKEY="secret" -d mrjackdavis/skeleton-scene-api
 
-You'll need to include
-
-    -e AWS_ACCESSKEYID="key" -e AWS_SECRETACCESSKEY="secret"
+If you don't feel like linking a `mysql` container, you can set the environment variable `MYSQL_CONNECTION_URL`, to a url with the format `mysql://username:password@host:port/database`, eg `mysql://root:apass@localhost:49153/test_db`
 
 ## Deployment
 
