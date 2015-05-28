@@ -123,37 +123,56 @@ describe('SceneStore',function(){
 			type:'IMAGE',
 			URI:'http://la.com'
 		};
-		var completedScene;
+		var requestedScene;
 
-		beforeEach(function(done){
-			store.NewRequest(params)
+		beforeEach(function(){
+			return store.NewRequest(params)
 				.then(function(scene){
-					return store.CompleteSceneRequest(scene,completionStatus,result);
-				}).then(function(scene){
-					completedScene = scene;
-					done();
-				}).catch(done);
+					requestedScene = scene;
+				});
 		});
 
 		it('should return new scene',function(){
-			verifyScene(completedScene);
-		});
-
-		it('should create new scene if it was completed successfully',function(done){
-			store.GetScene(completedScene)
+			return store.CompleteSceneRequest(requestedScene,completionStatus,result)
 				.then(function(scene){
 					verifyScene(scene);
-				}).then(done).catch(done);
+				});
 		});
 
-		it('should delete requested scene',function(done){
-			store.GetRequest({
-				sceneID:completedScene.sceneID,
-				createdAt:completedScene.requestedAt
-			})
+		it('should create new scene if it was completed successfully',function(){
+			return store.CompleteSceneRequest(requestedScene,completionStatus,result)
+				.then(function(scene){
+					return store.GetScene(scene);
+				})
+				.then(function(scene){
+					verifyScene(scene);
+				});
+		});
+
+		it('should delete requested scene',function(){
+			return store.CompleteSceneRequest(requestedScene,completionStatus,result)
+				.then(function(scene){
+					return store.GetRequest({
+						sceneID:scene.sceneID,
+						createdAt:scene.requestedAt
+					});
+				})
 				.then(function(scene){
 					expect(scene).to.be(null);
-				}).then(done).catch(done);
+				});
+		});
+
+		it('should accept "completedAt" in result',function(){
+			var result2 = {
+				type:'IMAGE',
+				URI:'http://aPlaceOnEarth.com',
+				completedAt:123456
+			};
+			console.log(requestedScene);
+			return store.CompleteSceneRequest(requestedScene,completionStatus,result2)
+				.then(function(completedScene){
+					expect(completedScene.completedAt).to.be(123456);
+				});
 		});
 
 		function verifyScene(scene){
@@ -177,32 +196,41 @@ describe('SceneStore',function(){
 			tags:['testing']
 		};
 
-		var completionStatus = 'SUCCESSFUL';
 		var result = {
 			type:'IMAGE',
 			URI:'http://la.com'
 		};
-		it('should return multiple scenes',function(done){
 
+		var scenes;
+
+		beforeEach(function(){
 			var promises = [];
 			var i = 0;
 
 			var fnCompleteScene = function(scene){
-				return store.CompleteSceneRequest(scene,completionStatus,result);
+				result.completedAt = scene.createdAt + i;
+				return store.CompleteSceneRequest(scene,'SUCCESSFUL',result);
 			};
 
-			while (i<10){
+			while (i<30){
 				promises.push(store.NewRequest(params)
 					.then(fnCompleteScene));
 				i++;
 			}
-			Promise.all(promises)
+			return Promise.all(promises)
 				.then(function(){
 					return store.GetScenes();
-				}).then(function(scenes){
-					expect(scenes.length).to.be(10);
-					done();
-				}).catch(done);
+				})
+				.then(function(res){
+					scenes = res;
+				});
+		});
+
+		it('should return up to 25 scenes',function(){
+			console.log(scenes.map(function(scene){
+				return scene.completedAt;
+			}));
+			expect(scenes.length).to.be(25);
 		});
 	});
 
