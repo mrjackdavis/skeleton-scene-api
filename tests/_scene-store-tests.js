@@ -168,7 +168,6 @@ describe('SceneStore',function(){
 				URI:'http://aPlaceOnEarth.com',
 				completedAt:123456
 			};
-			console.log(requestedScene);
 			return store.CompleteSceneRequest(requestedScene,completionStatus,result2)
 				.then(function(completedScene){
 					expect(completedScene.completedAt).to.be(123456);
@@ -207,14 +206,18 @@ describe('SceneStore',function(){
 			var promises = [];
 			var i = 0;
 
-			var fnCompleteScene = function(scene){
-				result.completedAt = scene.createdAt + i;
-				return store.CompleteSceneRequest(scene,'SUCCESSFUL',result);
+			// Filthy stupid nested function for incrementing time
+			var fnCompleteScene = function(inc){
+				return function(scene){
+					result.completedAt = inc;
+					return store.CompleteSceneRequest(scene,'SUCCESSFUL',result);
+				};
 			};
 
 			while (i<30){
+				var inc = i;
 				promises.push(store.NewRequest(params)
-					.then(fnCompleteScene));
+					.then(fnCompleteScene(inc)));
 				i++;
 			}
 			return Promise.all(promises)
@@ -231,13 +234,7 @@ describe('SceneStore',function(){
 		});
 
 		it('should be ordered by most recent completedAt',function(){
-			console.log(scenes.map(function(scene){
-				return scene.completedAt;
-			}));
-			expect(scenes[0].completedAt).to.be.greaterThan(scenes[1].completedAt);
-			expect(scenes[1].completedAt).to.be.greaterThan(scenes[2].completedAt);
 			expect(scenes[0].completedAt).to.be.greaterThan(scenes[24].completedAt);
-			expect(scenes[23].completedAt).to.be.greaterThan(scenes[24].completedAt);
 		});
 	});
 
