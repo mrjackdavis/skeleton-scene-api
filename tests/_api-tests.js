@@ -269,33 +269,39 @@ describe('API endpoint',function(){
 
 		describe('GET',function(){
 
-			beforeEach(function(done){
-				request(app)
-					.post('/v0-2/scene-requests')
-					.send({
-						resourceType:'URL',
-						resourceURI:'http://www.hipstertown.com',
-						generatorName:'Bob Marley'
-					})
-					.then(function(res){
-						var splitURL = res.headers.location.split('/');
+			beforeEach(function(){
+				var i = 0;
+				var promises = [];
 
-						return request(app)
-							.post('/v0-2/scenes')
-							.send({
-								request:{
-									sceneID:splitURL[(splitURL.length - 2)],
-									createdAt:splitURL[(splitURL.length - 1)]
-								},
-								result:{
-									URI:'http://awesomeresult.com/lala',
-									type:'IMAGE'
-								}
-							});
-					})
-					.then(function(){
-						done();
-					}).catch(done);
+				var completeSceneRequestFn = function(res){
+					var splitURL = res.headers.location.split('/');
+
+					return request(app)
+						.post('/v0-2/scenes')
+						.send({
+							request:{
+								sceneID:splitURL[(splitURL.length - 2)],
+								createdAt:splitURL[(splitURL.length - 1)]
+							},
+							result:{
+								URI:'http://awesomeresult.com/lala',
+								type:'IMAGE'
+							}
+						});
+				};
+
+				while(i < 30){
+					promises.push(request(app)
+						.post('/v0-2/scene-requests')
+						.send({
+							resourceType:'URL',
+							resourceURI:'http://www.hipstertown.com',
+							generatorName:'Bob Marley'
+						})
+						.then(completeSceneRequestFn));
+					i++;
+				}
+				return Promise.all(promises);
 			});
 
 			it('should return payload of scenes',function(){
@@ -305,6 +311,7 @@ describe('API endpoint',function(){
 						expect(res.status).to.be(200);
 						expect(res.body).to.be.ok();
 						expect(res.body).to.be.an(Array);
+						expect(res.body.length).to.be(25);
 						res.body.forEach(function(item){
 							expect(item).to.only.have.keys(
 								['sceneID',
@@ -321,11 +328,11 @@ describe('API endpoint',function(){
 					});
 			});
 
-			it('should return payload of scenes',function(){
+			it('should paginate scenes',function(){
 				return request(app)
-					.get('/v0-2/scenes?size=7&page=1')
+					.get('/v0-2/scenes?size=7&page=4')
 					.then(function(res){
-						expect(res.body.length).to.be.lessThan(7);
+						expect(res.body.length).to.be(2);
 					});
 			});
 		});
