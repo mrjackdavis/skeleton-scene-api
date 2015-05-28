@@ -227,10 +227,17 @@ describe('SceneStore',function(){
 		});
 
 		it('should return up to 25 scenes',function(){
+			expect(scenes.length).to.be(25);
+		});
+
+		it('should be ordered by most recent completedAt',function(){
 			console.log(scenes.map(function(scene){
 				return scene.completedAt;
 			}));
-			expect(scenes.length).to.be(25);
+			expect(scenes[0].completedAt).to.be.greaterThan(scenes[1].completedAt);
+			expect(scenes[1].completedAt).to.be.greaterThan(scenes[2].completedAt);
+			expect(scenes[0].completedAt).to.be.greaterThan(scenes[24].completedAt);
+			expect(scenes[23].completedAt).to.be.greaterThan(scenes[24].completedAt);
 		});
 	});
 
