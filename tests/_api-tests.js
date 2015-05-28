@@ -13,9 +13,9 @@ describe('API endpoint',function(){
 
 	var app;
 
-	before(function(done){
+	before(function(){
 		this.timeout(5000);
-		mockDynamo.Start(DYNAMO_PORT)
+		return mockDynamo.Start(DYNAMO_PORT)
 			.then(function(){
 				return appConfigGetter();
 			})
@@ -31,14 +31,22 @@ describe('API endpoint',function(){
 				});
 			}).then(function(newApp){
 				app = newApp;
-			}).then(function(){
-				done();
-			}).catch(done);
+			});
 	});
 
-	after(function(done){
+	after(function(){
 		this.timeout(8000);
-		mockDynamo.Stop().then(done);
+		return mockDynamo.Stop();
+	});
+
+	beforeEach(function(){
+		this.timeout(3000);
+		return app.locals.sceneStore.SetupDb();
+	});
+
+	afterEach(function(){
+		this.timeout(3000);
+		return app.locals.sceneStore.TeardownDb();
 	});
 
 	it('should enable CORS for web application',function(done){
@@ -64,7 +72,7 @@ describe('API endpoint',function(){
 		describe('POST',function(){
 			var response;
 
-			before(function(done){
+			beforeEach(function(done){
 				request(app)
 					.post('/v0-2/scene-requests')
 					.send({
@@ -91,7 +99,7 @@ describe('API endpoint',function(){
 		describe('GET',function(){
 			var response;
 
-			before(function(done){
+			beforeEach(function(done){
 				request(app)
 					.post('/v0-2/scene-requests')
 					.send({
@@ -123,7 +131,7 @@ describe('API endpoint',function(){
 		describe('GET',function(){
 			var response;
 
-			before(function(done){
+			beforeEach(function(done){
 				request(app)
 					.post('/v0-2/scene-requests')
 					.send({
@@ -160,7 +168,7 @@ describe('API endpoint',function(){
 		describe('PUT',function(){
 			var sceneRequestURL;
 
-			before(function(done){
+			beforeEach(function(done){
 				request(app)
 					.post('/v0-2/scene-requests')
 					.send({
@@ -261,7 +269,7 @@ describe('API endpoint',function(){
 
 		describe('GET',function(){
 
-			before(function(done){
+			beforeEach(function(done){
 				request(app)
 					.post('/v0-2/scene-requests')
 					.send({
@@ -290,8 +298,8 @@ describe('API endpoint',function(){
 					}).catch(done);
 			});
 
-			it('should return payload of scenes',function(done){
-				request(app)
+			it('should return payload of scenes',function(){
+				return request(app)
 					.get('/v0-2/scenes/')
 					.then(function(res){
 						expect(res.status).to.be(200);
@@ -310,8 +318,15 @@ describe('API endpoint',function(){
 								'thumbnailURI',
 								'tags']);
 						});
-						done();
-					}).catch(done);
+					});
+			});
+
+			it('should return payload of scenes',function(){
+				return request(app)
+					.get('/v0-2/scenes?size=7&page=1')
+					.then(function(res){
+						expect(res.body.length).to.be.lessThan(7);
+					});
 			});
 		});
 	});
@@ -319,7 +334,7 @@ describe('API endpoint',function(){
 	describe('/v0-2/scenes/:hash/:timestamp GET',function(){
 		var response;
 
-		before(function(done){
+		beforeEach(function(done){
 			request(app)
 				.post('/v0-2/scene-requests')
 				.send({
