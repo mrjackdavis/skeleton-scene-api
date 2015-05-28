@@ -200,8 +200,6 @@ describe('SceneStore',function(){
 			URI:'http://la.com'
 		};
 
-		var scenes;
-
 		beforeEach(function(){
 			var promises = [];
 			var i = 0;
@@ -220,21 +218,35 @@ describe('SceneStore',function(){
 					.then(fnCompleteScene(inc)));
 				i++;
 			}
-			return Promise.all(promises)
-				.then(function(){
-					return store.GetScenes();
-				})
-				.then(function(res){
-					scenes = res;
-				});
+			return Promise.all(promises);
 		});
 
 		it('should return up to 25 scenes',function(){
-			expect(scenes.length).to.be(25);
+			return store.GetScenes()
+				.then(function(scenes){
+					expect(scenes.length).to.be(25);
+				});
 		});
 
 		it('should be ordered by most recent completedAt',function(){
-			expect(scenes[0].completedAt).to.be.greaterThan(scenes[24].completedAt);
+			return store.GetScenes()
+				.then(function(scenes){
+					expect(scenes[0].completedAt).to.be.greaterThan(scenes[24].completedAt);
+				});
+		});
+
+		it('should support alternate limit',function(){
+			return store.GetScenes(23)
+				.then(function(scenes){
+					expect(scenes.length).to.be(23);
+				});
+		});
+
+		it('should support pagination',function(){
+			return store.GetScenes(13,2)
+				.then(function(scenes){
+					expect(scenes.length).to.be(4);
+				});
 		});
 	});
 
