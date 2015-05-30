@@ -13,9 +13,9 @@ describe('API endpoint',function(){
 
 	var app;
 
-	before(function(done){
+	before(function(){
 		this.timeout(5000);
-		mockDynamo.Start(DYNAMO_PORT)
+		return mockDynamo.Start(DYNAMO_PORT)
 			.then(function(){
 				return appConfigGetter();
 			})
@@ -26,18 +26,27 @@ describe('API endpoint',function(){
 						accessKeyId:'hocus',
 						secretAccessKey:'pocus'
 					},
+					MYSQL_CONNECTION_URL:config.MYSQL_CONNECTION_URL,
 					endpoint:'http://127.0.0.1:'+DYNAMO_PORT
 				});
 			}).then(function(newApp){
 				app = newApp;
-			}).then(function(){
-				done();
-			}).catch(done);
+			});
 	});
 
-	after(function(done){
+	after(function(){
 		this.timeout(8000);
-		mockDynamo.Stop().then(done);
+		return mockDynamo.Stop();
+	});
+
+	beforeEach(function(){
+		this.timeout(3000);
+		return app.locals.sceneStore.SetupDb();
+	});
+
+	afterEach(function(){
+		this.timeout(3000);
+		return app.locals.sceneStore.TeardownDb();
 	});
 
 	it('should enable CORS for web application',function(done){
@@ -63,7 +72,7 @@ describe('API endpoint',function(){
 		describe('POST',function(){
 			var response;
 
-			before(function(done){
+			beforeEach(function(done){
 				request(app)
 					.post('/v0-2/scene-requests')
 					.send({
@@ -90,7 +99,7 @@ describe('API endpoint',function(){
 		describe('GET',function(){
 			var response;
 
-			before(function(done){
+			beforeEach(function(done){
 				request(app)
 					.post('/v0-2/scene-requests')
 					.send({
@@ -122,7 +131,7 @@ describe('API endpoint',function(){
 		describe('GET',function(){
 			var response;
 
-			before(function(done){
+			beforeEach(function(done){
 				request(app)
 					.post('/v0-2/scene-requests')
 					.send({
@@ -159,7 +168,7 @@ describe('API endpoint',function(){
 		describe('PUT',function(){
 			var sceneRequestURL;
 
-			before(function(done){
+			beforeEach(function(done){
 				request(app)
 					.post('/v0-2/scene-requests')
 					.send({
@@ -256,46 +265,69 @@ describe('API endpoint',function(){
 						done();
 					}).catch(done);
 			});
+
+			it('should set completedAt time to now',function(){
+				return request(app)
+					.post('/v0-2/scenes')
+					.send({
+						request:sceneRequestID,
+						result:{
+							URI:'http://blah.com',
+							type:'IMAGE'
+						}
+					}).then(function(res){
+						return request(app).get(res.headers.location.replace('http://127.0.0.1',''));
+					}).then(function(res){
+						expect(res.body.completedAt).to.be.greaterThan(new Date(Date.now()-1000).getTime());
+					});
+			});
 		});
 
 		describe('GET',function(){
 
-			before(function(done){
-				request(app)
-					.post('/v0-2/scene-requests')
-					.send({
-						resourceType:'URL',
-						resourceURI:'http://www.hipstertown.com',
-						generatorName:'Bob Marley'
-					})
-					.then(function(res){
-						var splitURL = res.headers.location.split('/');
+			beforeEach(function(){
+				var i = 0;
+				var promises = [];
 
-						return request(app)
-							.post('/v0-2/scenes')
-							.send({
-								request:{
-									sceneID:splitURL[(splitURL.length - 2)],
-									createdAt:splitURL[(splitURL.length - 1)]
-								},
-								result:{
-									URI:'http://awesomeresult.com/lala',
-									type:'IMAGE'
-								}
-							});
-					})
-					.then(function(){
-						done();
-					}).catch(done);
+				var completeSceneRequestFn = function(res){
+					var splitURL = res.headers.location.split('/');
+
+					return request(app)
+						.post('/v0-2/scenes')
+						.send({
+							request:{
+								sceneID:splitURL[(splitURL.length - 2)],
+								createdAt:splitURL[(splitURL.length - 1)]
+							},
+							result:{
+								URI:'http://awesomeresult.com/lala',
+								type:'IMAGE'
+							}
+						});
+				};
+
+				while(i < 30){
+					promises.push(request(app)
+						.post('/v0-2/scene-requests')
+						.send({
+							resourceType:'URL',
+							resourceURI:'http://www.hipstertown.com',
+							generatorName:'Bob Marley'
+						})
+						.then(completeSceneRequestFn));
+					i++;
+				}
+				return Promise.all(promises);
 			});
 
-			it('should return payload of scenes',function(done){
-				request(app)
+			it('should return payload of scenes',function(){
+				return request(app)
 					.get('/v0-2/scenes/')
 					.then(function(res){
 						expect(res.status).to.be(200);
 						expect(res.body).to.be.ok();
 						expect(res.body).to.be.an(Array);
+						expect(res.body.length).to.be(25);
 						res.body.forEach(function(item){
 							expect(item).to.only.have.keys(
 								['sceneID',
@@ -306,10 +338,18 @@ describe('API endpoint',function(){
 								'resourceType',
 								'resultURI',
 								'resultType',
-								'thumbnailURI']);
+								'thumbnailURI',
+								'tags']);
 						});
-						done();
-					}).catch(done);
+					});
+			});
+
+			it('should paginate scenes',function(){
+				return request(app)
+					.get('/v0-2/scenes?size=7&page=4')
+					.then(function(res){
+						expect(res.body.length).to.be(2);
+					});
 			});
 		});
 	});
@@ -317,7 +357,7 @@ describe('API endpoint',function(){
 	describe('/v0-2/scenes/:hash/:timestamp GET',function(){
 		var response;
 
-		before(function(done){
+		beforeEach(function(done){
 			request(app)
 				.post('/v0-2/scene-requests')
 				.send({
@@ -361,7 +401,8 @@ describe('API endpoint',function(){
 						'resourceType',
 						'resultURI',
 						'resultType',
-						'thumbnailURI']);
+						'thumbnailURI',
+						'tags']);
 					done();
 				}).catch(done);
 		});

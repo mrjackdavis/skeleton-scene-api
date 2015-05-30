@@ -15,10 +15,12 @@ var DYNAMO_PORT = 4567;
 describe('SceneStore',function(){
 	var storeConfig;
 	var mockDynamo;
+	var store;
 
 	before(function(done){
 		appConfigGetter().then(function(config){
 			storeConfig = {
+				MYSQL_CONNECTION_URL:config.MYSQL_CONNECTION_URL,	
 				AWS_CREDENTIALS:{
 					// accessKeyId:config.TEST_AWS_CREDENTIALS.accessKeyId,
 					// secretAccessKey:config.TEST_AWS_CREDENTIALS.secretAccessKey
@@ -31,7 +33,10 @@ describe('SceneStore',function(){
 			var tmpDir = './tmp/mockDynamo-scene-store-tests';
 			mockDynamo = new MockDynamo(tmpDir);
 			return mockDynamo.Start(DYNAMO_PORT);
-		}).then(done).catch(done);
+		}).then(function(){
+			store = new SceneStore(storeConfig);
+			done();
+		}).catch(done);
 	});
 
 
@@ -41,19 +46,16 @@ describe('SceneStore',function(){
 
 	beforeEach(function(done){
 		this.timeout(3000);
-		var store = new SceneStore(storeConfig);
 		store.SetupDb().then(done).catch(done);
 	});
 
 	afterEach(function(done){
 		this.timeout(3000);
-		var store = new SceneStore(storeConfig);
 		store.TeardownDb().then(done).catch(done);
 	});
 
 	describe('.NewRequest() & .GetRequest()',function(){
 		it('should create and retrieve new requests respectively',function(done){
-			var store = new SceneStore(storeConfig);
 
 			var params = {
 				resourceType:'URL',
@@ -92,7 +94,6 @@ describe('SceneStore',function(){
 
 	describe('SetSceneRequestStatus',function(){
 		it('should update the status of a request',function(done){
-			var store = new SceneStore(storeConfig);
 			var params = {
 				resourceType:'URL',
 				resourceURI:'http://la.com',
@@ -120,47 +121,52 @@ describe('SceneStore',function(){
 		var completionStatus = 'SUCCESSFUL';
 		var result = {
 			type:'IMAGE',
-			URI:'http://la.com'
+			URI:'http://la.com',
+			completedAt:new Date().getTime()
 		};
-		var completedScene;
+		var requestedScene;
 
-		beforeEach(function(done){
-			var store = new SceneStore(storeConfig);
-			store.NewRequest(params)
+		beforeEach(function(){
+			return store.NewRequest(params)
 				.then(function(scene){
-					return store.CompleteSceneRequest(scene,completionStatus,result);
-				}).then(function(scene){
-					completedScene = scene;
-					done();
-				}).catch(done);
+					requestedScene = scene;
+				});
 		});
 
 		it('should return new scene',function(){
-			verifyScene(completedScene);
-		});
-
-		it('should create new scene if it was completed successfully',function(done){
-			var store = new SceneStore(storeConfig);
-			store.GetScene(completedScene)
+			return store.CompleteSceneRequest(requestedScene,completionStatus,result)
 				.then(function(scene){
 					verifyScene(scene);
-				}).then(done).catch(done);
+				});
 		});
 
-		it('should delete requested scene',function(done){
-			var store = new SceneStore(storeConfig);
-			store.GetRequest({
-				sceneID:completedScene.sceneID,
-				createdAt:completedScene.requestedAt
-			})
+		it('should create new scene if it was completed successfully',function(){
+			return store.CompleteSceneRequest(requestedScene,completionStatus,result)
+				.then(function(scene){
+					return store.GetScene(scene);
+				})
+				.then(function(scene){
+					verifyScene(scene);
+				});
+		});
+
+		it('should delete requested scene',function(){
+			return store.CompleteSceneRequest(requestedScene,completionStatus,result)
+				.then(function(scene){
+					return store.GetRequest({
+						sceneID:scene.sceneID,
+						createdAt:scene.requestedAt
+					});
+				})
 				.then(function(scene){
 					expect(scene).to.be(null);
-				}).then(done).catch(done);
+				});
 		});
 
 		function verifyScene(scene){
 			expect(scene).to.be.ok();
 			expect(scene.completedAt).to.be.a('number');
+			expect(scene.completedAt.toPrecision(9)).to.be(result.completedAt.toPrecision(9));
 			expect(scene.generatorName).to.be(params.generatorName);
 			expect(scene.resourceType).to.be(params.resourceType);
 			expect(scene.resourceURI).to.be(params.resourceURI);
@@ -179,33 +185,59 @@ describe('SceneStore',function(){
 			tags:['testing']
 		};
 
-		var completionStatus = 'SUCCESSFUL';
 		var result = {
 			type:'IMAGE',
 			URI:'http://la.com'
 		};
-		it('should return multiple scenes',function(done){
-			var store = new SceneStore(storeConfig);
 
+		beforeEach(function(){
 			var promises = [];
 			var i = 0;
+			var theTime = new Date().getTime();
 
-			var fnCompleteScene = function(scene){
-				return store.CompleteSceneRequest(scene,completionStatus,result);
+			// Filthy stupid nested function for incrementing time
+			var fnCompleteScene = function(inc){
+				return function(scene){
+					result.completedAt = theTime+(inc*5000);
+					return store.CompleteSceneRequest(scene,'SUCCESSFUL',result);
+				};
 			};
 
-			while (i<10){
+			while (i<30){
+				var inc = i;
 				promises.push(store.NewRequest(params)
-					.then(fnCompleteScene));
+					.then(fnCompleteScene(inc)));
 				i++;
 			}
-			Promise.all(promises)
-				.then(function(){
-					return store.GetScenes();
-				}).then(function(scenes){
-					expect(scenes.length).to.be(10);
-					done();
-				}).catch(done);
+			return Promise.all(promises);
+		});
+
+		it('should return up to 25 scenes',function(){
+			return store.GetScenes()
+				.then(function(scenes){
+					expect(scenes.length).to.be(25);
+				});
+		});
+
+		it('should be ordered by most recent completedAt',function(){
+			return store.GetScenes()
+				.then(function(scenes){
+					expect(scenes[0].completedAt).to.be.greaterThan(scenes[24].completedAt);
+				});
+		});
+
+		it('should support alternate limit',function(){
+			return store.GetScenes(23)
+				.then(function(scenes){
+					expect(scenes.length).to.be(23);
+				});
+		});
+
+		it('should support pagination',function(){
+			return store.GetScenes(13,2)
+				.then(function(scenes){
+					expect(scenes.length).to.be(4);
+				});
 		});
 	});
 
@@ -218,7 +250,6 @@ describe('SceneStore',function(){
 		};
 
 		it('should return multiple scenes',function(done){
-			var store = new SceneStore(storeConfig);
 
 			var promises = [];
 			var i = 0;

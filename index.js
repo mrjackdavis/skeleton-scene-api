@@ -3,13 +3,13 @@ var appConfigGetter = require('./lib/AppConfig');
 
 var appFactory = new AppFactory();
 
-console.log('Preparing app');
+console.log('Retrieving config');
 
 appConfigGetter()
 	.then(function(config){
-		return appFactory.NewApp({
-			AWS_CREDENTIALS:config.AWS_CREDENTIALS
-		});
+		console.log('Starting app with configuration');
+		console.log(config);
+		return appFactory.NewApp(config);
 	}).then(function(app){
 		console.log('App started, listening on port 8080');
 		app.listen(8080);
