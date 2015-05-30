@@ -3,10 +3,12 @@ var appConfigGetter = require('./lib/AppConfig');
 
 var appFactory = new AppFactory();
 
-console.log('Preparing app');
+console.log('Retrieving config');
 
 appConfigGetter()
 	.then(function(config){
+		console.log('Starting app with configuration');
+		console.log(config);
 		return appFactory.NewApp(config);
 	}).then(function(app){
 		console.log('App started, listening on port 8080');
