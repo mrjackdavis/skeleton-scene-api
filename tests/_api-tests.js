@@ -265,6 +265,22 @@ describe('API endpoint',function(){
 						done();
 					}).catch(done);
 			});
+
+			it('should set completedAt time to now',function(){
+				return request(app)
+					.post('/v0-2/scenes')
+					.send({
+						request:sceneRequestID,
+						result:{
+							URI:'http://blah.com',
+							type:'IMAGE'
+						}
+					}).then(function(res){
+						return request(app).get(res.headers.location.replace('http://127.0.0.1',''));
+					}).then(function(res){
+						expect(res.body.completedAt).to.be.greaterThan(new Date(Date.now()-1000).getTime());
+					});
+			});
 		});
 
 		describe('GET',function(){

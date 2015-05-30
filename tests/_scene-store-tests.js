@@ -121,7 +121,8 @@ describe('SceneStore',function(){
 		var completionStatus = 'SUCCESSFUL';
 		var result = {
 			type:'IMAGE',
-			URI:'http://la.com'
+			URI:'http://la.com',
+			completedAt:new Date().getTime()
 		};
 		var requestedScene;
 
@@ -162,21 +163,10 @@ describe('SceneStore',function(){
 				});
 		});
 
-		it('should accept "completedAt" in result',function(){
-			var result2 = {
-				type:'IMAGE',
-				URI:'http://aPlaceOnEarth.com',
-				completedAt:123456
-			};
-			return store.CompleteSceneRequest(requestedScene,completionStatus,result2)
-				.then(function(completedScene){
-					expect(completedScene.completedAt).to.be(123456);
-				});
-		});
-
 		function verifyScene(scene){
 			expect(scene).to.be.ok();
 			expect(scene.completedAt).to.be.a('number');
+			expect(scene.completedAt.toPrecision(9)).to.be(result.completedAt.toPrecision(9));
 			expect(scene.generatorName).to.be(params.generatorName);
 			expect(scene.resourceType).to.be(params.resourceType);
 			expect(scene.resourceURI).to.be(params.resourceURI);
@@ -203,11 +193,12 @@ describe('SceneStore',function(){
 		beforeEach(function(){
 			var promises = [];
 			var i = 0;
+			var theTime = new Date().getTime();
 
 			// Filthy stupid nested function for incrementing time
 			var fnCompleteScene = function(inc){
 				return function(scene){
-					result.completedAt = inc;
+					result.completedAt = theTime+(inc*5000);
 					return store.CompleteSceneRequest(scene,'SUCCESSFUL',result);
 				};
 			};
