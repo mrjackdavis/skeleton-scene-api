@@ -1,6 +1,8 @@
-# Skeleton Scene API [![Code Climate](https://codeclimate.com/github/mrjackdavis/skeleton-scene-api/badges/gpa.svg)](https://codeclimate.com/github/mrjackdavis/skeleton-scene-api)
+# Toast It Rest API [![Code Climate](https://codeclimate.com/github/mrjackdavis/skeleton-scene-api/badges/gpa.svg)](https://codeclimate.com/github/mrjackdavis/skeleton-scene-api)
 
-HTTP API for skeleton scene
+*Formally known as Skeleton Scene*
+
+Running at [api.toast-it.io](http://api.toast-it.io). See the [docs](https://github.com/mrjackdavis/skeleton-scene-docs) for project info
 
 ## Developing
 
